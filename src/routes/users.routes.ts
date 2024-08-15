@@ -1,11 +1,10 @@
-import { loginController } from '@/controllers/users.controllers';
-import { loginValidator } from '@/middlewares/users.middlewares';
+import { registerController } from '@/controllers/users.controllers';
 import express from 'express';
 
 const router = express.Router();
 
-router.post('/login', loginValidator, loginController);
+router.post('/register', registerController);
 
-//Export
+// Export
 const userRouter = router;
 export default userRouter;
