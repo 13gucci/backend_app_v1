@@ -1,9 +1,14 @@
-import serverMsg from '@/constant/messages/server-messages';
+import serverMsg from '@/constants/messages/server-messages';
+import userRouters from '@/routes/users.routes';
 import 'dotenv/config';
 import express from 'express';
 
 const app = express();
-const port = 4000;
+const port = process.env.SERVER_PORT;
+
+app.use(express.json()); //Parse json in body request JSON -> Object
+
+app.use('/api', userRouters);
 
 // [GET] Test server
 app.get('/api/test', (req, res) => {
