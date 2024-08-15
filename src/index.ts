@@ -1,6 +1,6 @@
-import express from 'express';
-import messages from '@/constant/messages';
+import serverMsg from '@/constant/messages/server-messages';
 import 'dotenv/config';
+import express from 'express';
 
 const app = express();
 const port = 4000;
@@ -8,10 +8,10 @@ const port = 4000;
 // [GET] Test server
 app.get('/api/test', (req, res) => {
     res.status(200).json({
-        message: messages.APP.TEST
+        message: serverMsg.TEST
     });
 });
 
 app.listen(port, () => {
-    console.log(`${messages.APP.SERVER} ${port}`);
+    console.log(`${serverMsg.SERVER} ${port}`);
 });
