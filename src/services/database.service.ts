@@ -1,6 +1,7 @@
 import serverMsg from '@/constants/messages/server-messages';
+import User from '@/models/schemas/user.schema';
 import 'dotenv/config';
-import { Db, MongoClient } from 'mongodb';
+import { Collection, Db, MongoClient } from 'mongodb';
 
 class DatabaseService {
     private static instance: DatabaseService;
@@ -17,11 +18,11 @@ class DatabaseService {
         const db_name = process.env.DATABASE_NAME;
 
         if (!connection_string) {
-            throw new Error(serverMsg.CONNECTION_STRING_err);
+            throw new Error(serverMsg.CONNECTION_STRING_ERROR);
         }
 
         if (!db_name) {
-            throw new Error(serverMsg.DATABASE_NAME_err);
+            throw new Error(serverMsg.DATABASE_NAME_ERROR);
         }
 
         if (!DatabaseService.instance) {
@@ -35,14 +36,26 @@ class DatabaseService {
             await this.client.connect();
             await this.db.command({ ping: 1 });
 
-            console.log(serverMsg.DATABASEsuccess);
+            console.log(serverMsg.DATABASE_CONNECTION_SUCCESS);
         } catch (err) {
-            console.log(serverMsg.DATABASEerr);
+            console.log(serverMsg.DATABASE_CONNECTION_FAILURE);
         } finally {
             return;
         }
     }
+
+    get users(): Collection<User> {
+        const col_name = process.env.DATABASE_USER_COLLECTION;
+
+        if (!col_name) {
+            throw new Error(serverMsg.COLLECTION_NAME_ERROR);
+        }
+
+        return this.db.collection<User>(col_name);
+    }
 }
+
+// Export
 
 const databaseService = DatabaseService.getInstance();
 export default databaseService;
