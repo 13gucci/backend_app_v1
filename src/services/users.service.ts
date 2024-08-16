@@ -1,5 +1,7 @@
+import { RegisterReqBody } from '@/@types/register.type';
 import User from '@/schemas/user.schema';
 import databaseService from '@/services/database.service';
+import { generateHashPass } from '@/utils/uitls';
 import { InsertOneResult, WithId } from 'mongodb';
 
 class UsersService {
@@ -14,8 +16,11 @@ class UsersService {
         return UsersService.instance;
     }
 
-    public async register(payload: { user: User }): Promise<InsertOneResult<User>> {
-        const response = await databaseService.users.insertOne(payload.user);
+    public async register(payload: { user: Omit<RegisterReqBody, 'confirm_password'> }): Promise<InsertOneResult<User>> {
+        const passwordHashed = await generateHashPass(payload.user.password, 10);
+        const newUser = { ...payload.user, date_of_birth: new Date(payload.user.date_of_birth), password: passwordHashed };
+
+        const response = await databaseService.users.insertOne(new User(newUser));
 
         return response;
     }
