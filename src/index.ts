@@ -1,5 +1,5 @@
 import serverMsg from '@/constants/messages/server-messages';
-import authRouters from '@/routes/auth.routes';
+import usersRouters from '@/routes/users.routes';
 import databaseService from '@/services/database.service';
 import 'dotenv/config';
 import express from 'express';
@@ -10,8 +10,8 @@ databaseService.run();
 
 app.use(express.json()); //Parse json in body request JSON -> Object
 
-// [Authentication & Authorization] routes
-app.use('/api/auth', authRouters);
+// [Users C U R D] routes
+app.use('/api/users', usersRouters);
 
 // [GET] Test server
 app.get('/api/test', (req, res) => {

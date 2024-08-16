@@ -1,4 +1,4 @@
-const hsc = {
+const hc = {
     // 1xx: Informational
     CONTINUE: 100,
     SWITCHING_PROTOCOLS: 101,
@@ -72,4 +72,4 @@ const hsc = {
     NETWORK_AUTHENTICATION_REQUIRED: 511
 } as const;
 
-export default hsc;
+export default hc;
