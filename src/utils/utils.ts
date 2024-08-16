@@ -1,6 +1,12 @@
 import bcrypt from 'bcrypt';
 
-export const generateHashPass = (myPlaintextPassword: string, saltRounds: number) => {
+export const generateHashPassword = ({
+    myPlaintextPassword,
+    saltRounds = Number(process.env.SALT_ROUNDS)
+}: {
+    myPlaintextPassword: string;
+    saltRounds?: number;
+}) => {
     return new Promise<string>((resolve, reject) => {
         bcrypt.hash(myPlaintextPassword, saltRounds, function (err, hash) {
             if (err) {

@@ -9,11 +9,11 @@ import { ParamsDictionary } from 'express-serve-static-core';
 export const registerController = async (req: Request<ParamsDictionary, unknown, RegisterReqBody>, res: Response) => {
     const { date_of_birth, email, name, password } = req.body;
     try {
-        const user = await usersService.register({ user: { date_of_birth, email, name, password } });
+        const response = await usersService.register({ user: { date_of_birth, email, name, password } });
 
         return res.status(hc.CREATED).json({
             message: authMsg.SUCCESS.REGISTER,
-            user
+            data: response
         });
     } catch (error) {
         return res.status(hc.BAD_REQUEST).json({
