@@ -1,12 +1,12 @@
-import User from '@/models/schemas/user.schema';
-import usersService from '@/services/users.service';
+import User from '@/schemas/user.schema';
+import authService from '@/services/auth.service';
 import { Request, Response } from 'express';
 
 export const registerController = async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     try {
-        const user = await usersService.register({ user: new User({ email, password }) });
+        const user = await authService.register({ user: new User({ email, password }) });
 
         return res.status(200).json({
             message: 'Login success',

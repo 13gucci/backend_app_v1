@@ -1,5 +1,5 @@
 import serverMsg from '@/constants/messages/server-messages';
-import User from '@/models/schemas/user.schema';
+import User from '@/schemas/user.schema';
 import 'dotenv/config';
 import { Collection, Db, MongoClient } from 'mongodb';
 
@@ -28,6 +28,7 @@ class DatabaseService {
         if (!DatabaseService.instance) {
             DatabaseService.instance = new DatabaseService(connection_string, db_name);
         }
+
         return DatabaseService.instance;
     }
 
@@ -35,12 +36,9 @@ class DatabaseService {
         try {
             await this.client.connect();
             await this.db.command({ ping: 1 });
-
             console.log(serverMsg.DATABASE_CONNECTION_SUCCESS);
         } catch (err) {
             console.log(serverMsg.DATABASE_CONNECTION_FAILURE);
-        } finally {
-            return;
         }
     }
 
@@ -56,6 +54,5 @@ class DatabaseService {
 }
 
 // Export
-
 const databaseService = DatabaseService.getInstance();
 export default databaseService;
