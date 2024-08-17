@@ -1,4 +1,5 @@
 export const validationMsg = {
+    VALIDATION_ERROR: 'Validation errors',
     REQUIRED: 'This field is required.',
     INVALID_EMAIL: 'Please enter a valid email address.',
     EXISTED_EMAIL: 'Email already existed',

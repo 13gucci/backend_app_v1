@@ -1,24 +1,17 @@
 import { RegisterReqBody } from '@/@types/register.type';
 import hc from '@/constants/http-status-codes';
 import authMsg from '@/constants/messages/auth-messages';
-import User from '@/schemas/user.schema';
 import usersService from '@/services/users.service';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export const registerController = async (req: Request<ParamsDictionary, unknown, RegisterReqBody>, res: Response) => {
-    const { date_of_birth, email, name, password } = req.body;
-    try {
-        const response = await usersService.register({ user: { date_of_birth, email, name, password } });
+    const { confirm_password, ...rest } = req.body;
 
-        return res.status(hc.CREATED).json({
-            message: authMsg.SUCCESS.REGISTER,
-            data: response
-        });
-    } catch (error) {
-        return res.status(hc.BAD_REQUEST).json({
-            message: authMsg.FAILURE.REGISTER,
-            error
-        });
-    }
+    const response = await usersService.createUser({ user: rest });
+
+    return res.status(hc.CREATED).json({
+        message: authMsg.SUCCESS.REGISTER,
+        data: response
+    });
 };

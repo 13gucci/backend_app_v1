@@ -47,7 +47,7 @@ class UsersService {
         return token;
     }
 
-    public async register(payload: { user: Omit<RegisterReqBody, 'confirm_password'> }) {
+    public async createUser(payload: { user: Omit<RegisterReqBody, 'confirm_password'> }) {
         const { user } = payload;
 
         const passwordHashed = await generateHashPassword({ myPlaintextPassword: user.password });
