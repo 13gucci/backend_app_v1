@@ -1,11 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 
-export const asyncHandler = (asyncFunc: Function) => {
+type tAsyncFunction = (req: Request, res: Response, next: NextFunction) => Promise<any> | any;
+
+export const asyncHandler = (asyncFunc: tAsyncFunction) => {
     return async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            await asyncFunc(req, res, next);
-        } catch (error) {
-            next(error);
-        }
+        await asyncFunc(req, res, next).catch(next);
     };
 };

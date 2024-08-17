@@ -1,4 +1,6 @@
+import hc from '@/constants/http-status-codes';
 import { validationMsg } from '@/constants/messages/validation-messages';
+import { ErrorMessageCode } from '@/schemas/errors.schema';
 import usersService from '@/services/users.service';
 import validator from '@/utils/request-validator';
 import { checkSchema, Schema } from 'express-validator';
@@ -31,7 +33,10 @@ const registerValidatorSchema: Schema = {
                 const isExisted = await usersService.emailExists({ email: value });
 
                 if (Boolean(isExisted)) {
-                    throw new Error(validationMsg.EXISTED_EMAIL);
+                    throw new ErrorMessageCode({
+                        code: hc.CONFLICT,
+                        message: validationMsg.EXISTED_EMAIL
+                    });
                 }
                 return true;
             }
@@ -87,3 +92,36 @@ const registerValidatorSchema: Schema = {
 export const registerValidator = validator(registerValidatorSchema);
 
 // End Register Middlewares
+
+// Login Middleware
+
+const loginValidatorSchema = checkSchema({
+    email: {
+        notEmpty: {
+            errorMessage: validationMsg.REQUIRED
+        },
+        isEmail: {
+            errorMessage: validationMsg.INVALID_EMAIL
+        },
+        custom: {
+            options: async (value) => {
+                const isExisted = await usersService.emailExists({ email: value });
+
+                if (Boolean(isExisted)) {
+                    throw new ErrorMessageCode({
+                        code: hc.CONFLICT,
+                        message: validationMsg.EXISTED_EMAIL
+                    });
+                }
+                return true;
+            }
+        }
+    },
+    password: {
+        notEmpty: {
+            errorMessage: validationMsg.REQUIRED
+        }
+    }
+});
+
+// End Login Middleware
