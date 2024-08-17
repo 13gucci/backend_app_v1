@@ -18,12 +18,8 @@ export const generateHashPassword = ({
 };
 
 export const comparePassword = (myPlaintextPassword: string, hash: string) => {
-    return new Promise<boolean>((resolve, reject) => {
-        bcrypt.compare(myPlaintextPassword, hash).then(function (result) {
-            if (result) {
-                resolve(true);
-            }
-            reject(false);
-        });
-    });
+    return bcrypt
+        .compare(myPlaintextPassword, hash)
+        .then((result) => result)
+        .catch(() => false);
 };

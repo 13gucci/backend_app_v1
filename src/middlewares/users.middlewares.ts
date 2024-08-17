@@ -4,7 +4,10 @@ import { ErrorMessageCode } from '@/schemas/errors.schema';
 import usersService from '@/services/users.service';
 import validator from '@/utils/request-validator';
 import { checkSchema, Schema } from 'express-validator';
-
+import { rateLimit } from 'express-rate-limit';
+import serverMsg from '@/constants/messages/server-messages';
+import authMsg from '@/constants/messages/auth-messages';
+import { comparePassword, generateHashPassword } from '@/utils/utils';
 //Register Middlewares
 
 const registerValidatorSchema: Schema = {
@@ -30,9 +33,9 @@ const registerValidatorSchema: Schema = {
         },
         custom: {
             options: async (value) => {
-                const isExisted = await usersService.emailExists({ email: value });
+                const user = await usersService.emailExists({ email: value });
 
-                if (Boolean(isExisted)) {
+                if (Boolean(user)) {
                     throw new ErrorMessageCode({
                         code: hc.CONFLICT,
                         message: validationMsg.EXISTED_EMAIL
@@ -95,7 +98,20 @@ export const registerValidator = validator(registerValidatorSchema);
 
 // Login Middleware
 
-const loginValidatorSchema = checkSchema({
+export const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes,
+    limit: 5,
+    standardHeaders: 'draft-7',
+    handler: (req, res, next) => {
+        const reachLimitError = new ErrorMessageCode({
+            code: hc.TOO_MANY_REQUESTS,
+            message: serverMsg.REACHED_LIMIT_REQUEST_LOGIN
+        });
+        next(reachLimitError);
+    }
+});
+
+const loginValidatorSchema: Schema = {
     email: {
         notEmpty: {
             errorMessage: validationMsg.REQUIRED
@@ -104,15 +120,27 @@ const loginValidatorSchema = checkSchema({
             errorMessage: validationMsg.INVALID_EMAIL
         },
         custom: {
-            options: async (value) => {
-                const isExisted = await usersService.emailExists({ email: value });
+            options: async (value, { req }) => {
+                const user = await usersService.emailExists({ email: value });
 
-                if (Boolean(isExisted)) {
+                if (!user) {
                     throw new ErrorMessageCode({
-                        code: hc.CONFLICT,
-                        message: validationMsg.EXISTED_EMAIL
+                        code: hc.UNAUTHORIZED,
+                        message: authMsg.FAILURE.LOGIN
                     });
                 }
+
+                const { password } = user;
+                // console.log('Compare: ', await generateHashPassword({ myPlaintextPassword: req.body.password }), password);
+                const isValidPassword = await comparePassword(req.body.password, password);
+
+                if (!isValidPassword) {
+                    throw new ErrorMessageCode({
+                        code: hc.UNAUTHORIZED,
+                        message: authMsg.FAILURE.LOGIN
+                    });
+                }
+
                 return true;
             }
         }
@@ -122,6 +150,8 @@ const loginValidatorSchema = checkSchema({
             errorMessage: validationMsg.REQUIRED
         }
     }
-});
+};
+
+export const loginValidator = validator(loginValidatorSchema);
 
 // End Login Middleware
