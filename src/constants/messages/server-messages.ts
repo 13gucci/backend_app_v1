@@ -5,7 +5,8 @@ const serverMsg = {
     CONNECTION_STRING_ERROR: 'Environment variable CONNECTION_STRING is not defined.',
     DATABASE_NAME_ERROR: 'Environment variable DATABASE_NAME is not defined.',
     DATABASE_CONNECTION_FAILURE: 'Failed to connect to the database at: ',
-    COLLECTION_NAME_ERROR: 'Collection variable is not defined.'
+    COLLECTION_NAME_ERROR: 'Collection variable is not defined.',
+    REACHED_LIMIT_REQUEST_LOGIN: 'Client request Limit reached'
 } as const;
 
 export default serverMsg;
