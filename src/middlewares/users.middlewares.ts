@@ -130,9 +130,7 @@ const loginValidatorSchema: Schema = {
                     });
                 }
 
-                const { password } = user;
-                // console.log('Compare: ', await generateHashPassword({ myPlaintextPassword: req.body.password }), password);
-                const isValidPassword = await comparePassword(req.body.password, password);
+                const isValidPassword = await comparePassword(req.body.password, user.password);
 
                 if (!isValidPassword) {
                     throw new ErrorMessageCode({
@@ -141,6 +139,7 @@ const loginValidatorSchema: Schema = {
                     });
                 }
 
+                req.user = user;
                 return true;
             }
         }

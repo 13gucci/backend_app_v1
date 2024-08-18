@@ -50,7 +50,6 @@ const validator = (schema: Schema) => {
             }
 
             unprocessableEntityErros.errors[item] = result_errors[item];
-            console.log(unprocessableEntityErros);
         });
 
         return next(unprocessableEntityErros);

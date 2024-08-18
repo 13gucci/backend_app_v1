@@ -47,7 +47,13 @@ class UsersService {
         return token;
     }
 
-    public async createUser(payload: { user: Omit<RegisterReqBody, 'confirm_password'> }) {
+    public async emailExists(payload: { email: string }): Promise<WithId<User> | null> {
+        const response = await databaseService.users.findOne({ email: payload.email });
+
+        return response;
+    }
+
+    public async register(payload: { user: Omit<RegisterReqBody, 'confirm_password'> }) {
         const { user } = payload;
 
         const passwordHashed = await generateHashPassword({ myPlaintextPassword: user.password });
@@ -76,10 +82,26 @@ class UsersService {
         };
     }
 
-    public async emailExists(payload: { email: string }): Promise<WithId<User> | null> {
-        const response = await databaseService.users.findOne({ email: payload.email });
+    public async login(payload: { user_id: string }) {
+        const [access_token, refresh_token] = await Promise.all([
+            this.signToken({
+                exp: process.env.EXP_ACCESS_TOKEN,
+                private_key: process.env.JWT_PRIVATE_KEY as string,
+                token_type: eTokenType.ACCESS_TOKEN,
+                sub: payload.user_id
+            }),
+            this.signToken({
+                exp: process.env.EXP_REFRESH_TOKEN,
+                private_key: process.env.JWT_PRIVATE_KEY as string,
+                token_type: eTokenType.REFRESH_TOKEN,
+                sub: payload.user_id
+            })
+        ]);
 
-        return response;
+        return {
+            access_token,
+            refresh_token
+        };
     }
 }
 
