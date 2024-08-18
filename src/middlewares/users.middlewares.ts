@@ -100,14 +100,15 @@ export const registerValidator = validator(registerValidatorSchema);
 
 export const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes,
-    limit: 5,
+    limit: 10, // 10 times for login
     standardHeaders: 'draft-7',
     handler: (req, res, next) => {
-        const reachLimitError = new ErrorMessageCode({
-            code: hc.TOO_MANY_REQUESTS,
-            message: serverMsg.REACHED_LIMIT_REQUEST_LOGIN
-        });
-        next(reachLimitError);
+        next(
+            new ErrorMessageCode({
+                code: hc.TOO_MANY_REQUESTS,
+                message: serverMsg.REACHED_LIMIT_REQUEST_LOGIN
+            })
+        );
     }
 });
 

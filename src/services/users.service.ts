@@ -7,6 +7,7 @@ import { signTokenString } from '@/utils/jwt-sign';
 import { generateHashPassword } from '@/utils/utils';
 import { Algorithm } from 'jsonwebtoken';
 import { InsertOneResult, WithId } from 'mongodb';
+import refreshTokenService from '@/services/refresh-token.service';
 
 class UsersService {
     private static instance: UsersService;
@@ -97,6 +98,11 @@ class UsersService {
                 sub: payload.user_id
             })
         ]);
+
+        await refreshTokenService.createRefreshToken({
+            token_string: refresh_token,
+            user_id: payload.user_id
+        });
 
         return {
             access_token,

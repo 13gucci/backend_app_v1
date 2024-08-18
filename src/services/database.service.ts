@@ -1,4 +1,5 @@
 import serverMsg from '@/constants/messages/server-messages';
+import { RefreshToken } from '@/schemas/refresh-token.schema';
 import User from '@/schemas/user.schema';
 import 'dotenv/config';
 import { Collection, Db, MongoClient } from 'mongodb';
@@ -50,6 +51,15 @@ class DatabaseService {
         }
 
         return this.db.collection<User>(col_name);
+    }
+
+    get refreshTokens(): Collection<RefreshToken> {
+        const col_name = process.env.DATABASE_REFRESH_TOKEN_COLLECTION;
+        if (!col_name) {
+            throw new Error(serverMsg.COLLECTION_NAME_ERROR);
+        }
+
+        return this.db.collection<RefreshToken>(col_name);
     }
 }
 
