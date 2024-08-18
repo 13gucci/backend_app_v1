@@ -22,7 +22,7 @@ export const signTokenString = ({
     return new Promise<string>((resolve, reject) => {
         jwt.sign(payload, privateKey, options, function (err, token) {
             if (err) {
-                throw reject(err.message);
+                throw reject(err);
             }
             resolve(token as string);
         });
