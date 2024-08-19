@@ -54,8 +54,21 @@ class UsersService {
         return response;
     }
 
-    public async readUser(payload: { _id: string }): Promise<WithId<User> | null> {
-        const resposne = await databaseService.users.findOne({ _id: new ObjectId(payload._id) });
+    public async readUser(payload: { _id: string; protect_fields?: (keyof User)[] }): Promise<WithId<User> | null> {
+        const protects: { [key: string]: number } = {};
+
+        if (payload.protect_fields && Array.isArray(payload.protect_fields)) {
+            payload.protect_fields.forEach((field) => {
+                protects[field as string] = 0;
+            });
+        }
+
+        const resposne = await databaseService.users.findOne(
+            { _id: new ObjectId(payload._id) },
+            {
+                projection: protects
+            }
+        );
 
         return resposne;
     }
