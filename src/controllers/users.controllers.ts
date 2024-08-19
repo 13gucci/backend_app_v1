@@ -29,9 +29,9 @@ export const registerController = async (req: Request<ParamsDictionary, unknown,
 
 export const loginController = async (req: Request<ParamsDictionary, unknown, LoginReqBody>, res: Response) => {
     const { user } = req;
-    const { _id } = user as User;
+    const { _id, verify } = user as User;
 
-    const response = await usersService.login({ user_id: _id.toString() });
+    const response = await usersService.login({ user_id: _id.toString(), verify: verify });
 
     return res.status(hc.OK).json({
         message: authMsg.SUCCESS.LOGIN,
@@ -103,8 +103,8 @@ export const forgotPasswordController = async (
     req: Request<ParamsDictionary, unknown, ForgotPasswordReqBody>,
     res: Response
 ) => {
-    const { _id } = req.user as User;
-    const response = await usersService.updateForgotPasswordToken({ user_id: _id.toString() });
+    const { _id, verify } = req.user as User;
+    const response = await usersService.updateForgotPasswordToken({ user_id: _id.toString(), verify: verify });
 
     return res.status(hc.OK).json(response);
 };
@@ -142,5 +142,11 @@ export const getMeController = async (req: Request, res: Response) => {
     return res.status(hc.OK).json({
         message: 'Get profile user successfully',
         data: user
+    });
+};
+
+export const updateMeController = async (req: Request, res: Response) => {
+    res.status(200).json({
+        message: 'Update oke'
     });
 };

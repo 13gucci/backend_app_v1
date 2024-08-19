@@ -7,7 +7,8 @@ import {
     registerController,
     resendEmailVerifyController,
     resetPasswordController,
-    verifyForgotPasswordTokenController
+    verifyForgotPasswordTokenController,
+    updateMeController
 } from '@/controllers/users.controllers';
 import {
     accessTokenValidator,
@@ -18,7 +19,8 @@ import {
     verifyEmailValidator,
     forgotPasswordValidator,
     verifyForgotPasswordValidator,
-    resetPasswordValidator
+    resetPasswordValidator,
+    updateMeValidator
 } from '@/middlewares/users.middlewares';
 import { asyncHandler } from '@/utils/async-handler';
 import express from 'express';
@@ -56,6 +58,9 @@ router.post('/reset-password', requestLimiter, resetPasswordValidator, asyncHand
 
 // [GET] /api/users/me
 router.get('/me', accessTokenValidator, asyncHandler(getMeController));
+
+// [PATCH] /api/users/me
+router.patch('/me', accessTokenValidator, updateMeValidator, asyncHandler(updateMeController));
 
 // Export
 const usersRouters = router;

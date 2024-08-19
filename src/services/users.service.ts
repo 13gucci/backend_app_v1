@@ -24,13 +24,13 @@ class UsersService {
     public async signToken({
         exp,
         private_key,
-        token_type,
+        my_payload,
         sub
     }: {
         private_key: string;
         exp: string | number | undefined;
         sub: string;
-        token_type: eTokenType;
+        my_payload: { user_id: string; token_type: eTokenType; verify: eUserVerifyStatus };
     }) {
         const token = await signTokenString({
             privateKey: private_key,
@@ -42,7 +42,9 @@ class UsersService {
                 subject: sub,
                 expiresIn: exp
             },
-            payload: { token_type }
+            payload: {
+                ...my_payload
+            }
         });
 
         return token;
@@ -86,22 +88,36 @@ class UsersService {
             this.signToken({
                 exp: process.env.EXP_ACCESS_TOKEN,
                 private_key: process.env.ACCESS_PRIVATE_KEY as string,
-                token_type: eTokenType.ACCESS_TOKEN,
+                my_payload: {
+                    user_id: user_id.toString(),
+                    token_type: eTokenType.ACCESS_TOKEN,
+                    verify: eUserVerifyStatus.Unverified
+                },
                 sub: user_id.toString()
             }),
             this.signToken({
                 exp: process.env.EXP_REFRESH_TOKEN,
                 private_key: process.env.REFRESH_PRIVATE_KEY as string,
-                token_type: eTokenType.REFRESH_TOKEN,
+                my_payload: {
+                    user_id: user_id.toString(),
+                    token_type: eTokenType.REFRESH_TOKEN,
+                    verify: eUserVerifyStatus.Unverified
+                },
                 sub: user_id.toString()
             }),
             this.signToken({
                 exp: process.env.EXP_ACCESS_TOKEN,
                 private_key: process.env.VERIFY_EMAIL_PRIVATE_KEY as string,
-                token_type: eTokenType.EMAIL_VERIFY_TOKEN,
+                my_payload: {
+                    user_id: user_id.toString(),
+                    token_type: eTokenType.EMAIL_VERIFY_TOKEN,
+                    verify: eUserVerifyStatus.Unverified
+                },
                 sub: user_id.toString()
             })
         ]);
+
+        console.log('Click here to verify:   ', email_verify_token);
 
         const newUser = {
             ...user,
@@ -118,7 +134,7 @@ class UsersService {
         };
     }
 
-    public async login(payload: { user_id: string }): Promise<{
+    public async login(payload: { user_id: string; verify: eUserVerifyStatus }): Promise<{
         access_token: string;
         refresh_token: string;
     }> {
@@ -126,13 +142,21 @@ class UsersService {
             this.signToken({
                 exp: process.env.EXP_ACCESS_TOKEN,
                 private_key: process.env.ACCESS_PRIVATE_KEY as string,
-                token_type: eTokenType.ACCESS_TOKEN,
+                my_payload: {
+                    user_id: payload.user_id,
+                    token_type: eTokenType.ACCESS_TOKEN,
+                    verify: payload.verify
+                },
                 sub: payload.user_id
             }),
             this.signToken({
                 exp: process.env.EXP_REFRESH_TOKEN,
                 private_key: process.env.REFRESH_PRIVATE_KEY as string,
-                token_type: eTokenType.REFRESH_TOKEN,
+                my_payload: {
+                    user_id: payload.user_id,
+                    token_type: eTokenType.REFRESH_TOKEN,
+                    verify: eUserVerifyStatus.Unverified
+                },
                 sub: payload.user_id
             })
         ]);
@@ -201,7 +225,11 @@ class UsersService {
         const email_verify_token = await this.signToken({
             exp: process.env.EXP_ACCESS_TOKEN,
             private_key: process.env.VERIFY_EMAIL_PRIVATE_KEY as string,
-            token_type: eTokenType.EMAIL_VERIFY_TOKEN,
+            my_payload: {
+                user_id: payload.user_id,
+                token_type: eTokenType.EMAIL_VERIFY_TOKEN,
+                verify: eUserVerifyStatus.Unverified
+            },
             sub: payload.user_id
         });
 
@@ -226,11 +254,15 @@ class UsersService {
         };
     }
 
-    public async updateForgotPasswordToken(payload: { user_id: string }) {
+    public async updateForgotPasswordToken(payload: { user_id: string; verify: eUserVerifyStatus }) {
         const forgot_password_token = await this.signToken({
             exp: process.env.EXP_FORGOT_PASSWORD_TOKEN,
             private_key: process.env.FORGOT_PASSWORD_PRIVATE_KEY as string,
-            token_type: eTokenType.FORGOT_PASSWORD_TOKEN,
+            my_payload: {
+                user_id: payload.user_id,
+                token_type: eTokenType.FORGOT_PASSWORD_TOKEN,
+                verify: eUserVerifyStatus.Unverified
+            },
             sub: payload.user_id
         });
 
