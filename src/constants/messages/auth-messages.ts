@@ -19,7 +19,8 @@ const authMsg = {
         PASSWORD_MISMATCH: 'Passwords do not match.',
         ACCOUNT_LOCKED: 'Account is locked due to multiple failed login attempts.',
         UNAUTHORIZED: 'Unauthorized access.',
-        FORBIDDEN: 'You do not have permission to perform this action.'
+        FORBIDDEN: 'You do not have permission to perform this action.',
+        UNVERIFY: 'User is not verified. Please verify your email address to access this resource.'
     }
 } as const;
 export default authMsg;

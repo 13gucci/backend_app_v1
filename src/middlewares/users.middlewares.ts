@@ -3,15 +3,16 @@ import authMsg from '@/constants/messages/auth-messages';
 import serverMsg from '@/constants/messages/server-messages';
 import { validationMsg } from '@/constants/messages/validation-messages';
 import { ErrorMessageCode } from '@/schemas/errors.schema';
+import { eUserVerifyStatus } from '@/schemas/user.schema';
 import refreshTokenService from '@/services/refresh-token.service';
 import usersService from '@/services/users.service';
 import { verifyTokenString } from '@/utils/jwt-sign';
 import validator from '@/utils/request-validator';
 import { comparePassword, validateBearerToken } from '@/utils/utils';
-import { Request } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { Schema } from 'express-validator';
-import { JsonWebTokenError } from 'jsonwebtoken';
+import { JsonWebTokenError, JwtPayload } from 'jsonwebtoken';
 
 //Register Middlewares
 const registerValidatorSchema: Schema = {
@@ -102,7 +103,7 @@ export const registerValidator = validator(registerValidatorSchema, ['body']);
 // Login Middleware
 export const requestLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes,
-    limit: 10, // 10 times for login
+    limit: 100, // 10 times for login
     standardHeaders: 'draft-7',
     handler: (req, res, next) => {
         next(
@@ -471,5 +472,24 @@ export const resetPasswordValidatorSchema: Schema = {
 };
 
 export const resetPasswordValidator = validator(resetPasswordValidatorSchema, ['body']);
-
 // End forgot password middleware
+
+// update me validator middleware
+// Nếu synchronous middleware ta chỉ cần throw,
+// Nếu là asynchrounous ta cần next
+export const updateMeValidator = (req: Request, res: Response, next: NextFunction) => {
+    const { verify } = req.payload_access_token_decoded as JwtPayload;
+
+    if (verify !== eUserVerifyStatus.Verified) {
+        return next(
+            new ErrorMessageCode({
+                code: hc.FORBIDDEN,
+                message: authMsg.FAILURE.UNVERIFY
+            })
+        );
+    }
+
+    return next();
+};
+
+// End update me validator middleware
