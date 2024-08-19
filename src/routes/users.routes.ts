@@ -3,6 +3,7 @@ import {
     forgotPasswordController,
     loginController,
     logoutController,
+    meController,
     registerController,
     resendEmailVerifyController,
     resetPasswordController,
@@ -52,6 +53,9 @@ router.post(
 
 // [POST] /api/users/reset-password
 router.post('/reset-password', requestLimiter, resetPasswordValidator, asyncHandler(resetPasswordController));
+
+// [GET] /api/users/me
+router.get('/me', accessTokenValidator, asyncHandler(meController));
 
 // Export
 const usersRouters = router;

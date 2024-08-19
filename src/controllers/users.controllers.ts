@@ -15,6 +15,7 @@ import usersService from '@/services/users.service';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { JwtPayload } from 'jsonwebtoken';
+import { omit } from 'lodash';
 
 export const registerController = async (req: Request<ParamsDictionary, unknown, RegisterReqBody>, res: Response) => {
     const { confirm_password, ...rest } = req.body;
@@ -71,7 +72,7 @@ export const emailVerifyController = async (req: Request, res: Response) => {
 
     const response = await usersService.verifyEmail({ user_id: user._id.toString() });
 
-    res.status(hc.OK).json(response);
+    return res.status(hc.OK).json(response);
 };
 
 export const resendEmailVerifyController = async (req: Request, res: Response) => {
@@ -96,7 +97,7 @@ export const resendEmailVerifyController = async (req: Request, res: Response) =
 
     const response = await usersService.resendVerifyEmailToken({ user_id: user._id.toString() });
 
-    res.status(hc.OK).json(response);
+    return res.status(hc.OK).json(response);
 };
 
 export const forgotPasswordController = async (
@@ -106,14 +107,14 @@ export const forgotPasswordController = async (
     const { _id } = req.user as User;
     const response = await usersService.updateForgotPasswordToken({ user_id: _id.toString() });
 
-    res.status(hc.OK).json(response);
+    return res.status(hc.OK).json(response);
 };
 
 export const verifyForgotPasswordTokenController = (
     req: Request<ParamsDictionary, unknown, VerifyForgotPasswordReqBody>,
     res: Response
 ) => {
-    res.status(hc.OK).json({
+    return res.status(hc.OK).json({
         message: 'Verify forgot password token success'
     });
 };
@@ -128,5 +129,19 @@ export const resetPasswordController = async (
 
     const response = await usersService.resetPassword({ new_password, user_id: sub as string });
 
-    res.status(hc.OK).json(response);
+    return res.status(hc.OK).json(response);
+};
+
+export const meController = async (req: Request, res: Response) => {
+    const { sub } = req.payload_access_token_decoded as JwtPayload;
+
+    const user = await usersService.readUser({
+        _id: sub as string,
+        protect_fields: ['password', 'email_verify_token', 'forgot_password_token']
+    });
+
+    return res.status(hc.OK).json({
+        message: 'Get profile user successfully',
+        data: user
+    });
 };
