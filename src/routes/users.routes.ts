@@ -1,5 +1,11 @@
 import { loginController, registerController } from '@/controllers/users.controllers';
-import { loginLimiter, loginValidator, registerValidator } from '@/middlewares/users.middlewares';
+import {
+    loginLimiter,
+    loginValidator,
+    accessTokenValidator,
+    registerValidator,
+    refreshTokenValidator
+} from '@/middlewares/users.middlewares';
 import { asyncHandler } from '@/utils/async-handler';
 import express from 'express';
 
@@ -9,8 +15,12 @@ const router = express.Router();
 router.post('/register', registerValidator, asyncHandler(registerController));
 
 // [POST] /api/users/login
-
 router.post('/login', loginLimiter, loginValidator, asyncHandler(loginController));
+
+// [POST] /api/users/logout
+router.post('/logout', accessTokenValidator, refreshTokenValidator, (req, res) => {
+    res.send('ok');
+});
 
 // Export
 const usersRouters = router;

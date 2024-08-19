@@ -86,7 +86,7 @@ class UsersService {
     public async login(payload: { user_id: string }) {
         const [access_token, refresh_token] = await Promise.all([
             this.signToken({
-                exp: process.env.EXP_ACCESS_TOKEN,
+                exp: 3,
                 private_key: process.env.JWT_PRIVATE_KEY as string,
                 token_type: eTokenType.ACCESS_TOKEN,
                 sub: payload.user_id

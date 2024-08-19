@@ -1,15 +1,16 @@
 import hc from '@/constants/http-status-codes';
+import authMsg from '@/constants/messages/auth-messages';
+import serverMsg from '@/constants/messages/server-messages';
 import { validationMsg } from '@/constants/messages/validation-messages';
 import { ErrorMessageCode } from '@/schemas/errors.schema';
 import usersService from '@/services/users.service';
+import { verifyTokenString } from '@/utils/jwt-sign';
 import validator from '@/utils/request-validator';
-import { checkSchema, Schema } from 'express-validator';
+import { comparePassword, validateBearerToken } from '@/utils/utils';
 import { rateLimit } from 'express-rate-limit';
-import serverMsg from '@/constants/messages/server-messages';
-import authMsg from '@/constants/messages/auth-messages';
-import { comparePassword, generateHashPassword } from '@/utils/utils';
-//Register Middlewares
+import { Schema } from 'express-validator';
 
+//Register Middlewares
 const registerValidatorSchema: Schema = {
     name: {
         notEmpty: {
@@ -92,12 +93,10 @@ const registerValidatorSchema: Schema = {
     }
 };
 
-export const registerValidator = validator(registerValidatorSchema);
-
+export const registerValidator = validator(registerValidatorSchema, ['body']);
 // End Register Middlewares
 
 // Login Middleware
-
 export const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes,
     limit: 10, // 10 times for login
@@ -152,6 +151,60 @@ const loginValidatorSchema: Schema = {
     }
 };
 
-export const loginValidator = validator(loginValidatorSchema);
-
+export const loginValidator = validator(loginValidatorSchema, ['body']);
 // End Login Middleware
+
+// Token Middleware
+const accessTokenValidatorSchema: Schema = {
+    authorization: {
+        custom: {
+            options: async (value) => {
+                if (!value) {
+                    throw new ErrorMessageCode({
+                        code: hc.UNAUTHORIZED,
+                        message: authMsg.FAILURE.UNAUTHORIZED
+                    });
+                }
+
+                const tokenValue = validateBearerToken(value);
+
+                //Throw error of Error then request_validator will catch
+                const payload_access_token_decoded = await verifyTokenString({
+                    privateKey: process.env.JWT_PRIVATE_KEY as string,
+                    token: tokenValue
+                });
+
+                return true;
+            }
+        }
+    }
+};
+
+export const accessTokenValidator = validator(accessTokenValidatorSchema, ['headers']);
+
+const refreshTokenValidatorSchema: Schema = {
+    refresh_token: {
+        custom: {
+            options: async (value) => {
+                if (!value) {
+                    throw new ErrorMessageCode({
+                        code: hc.UNAUTHORIZED,
+                        message: authMsg.FAILURE.UNAUTHORIZED
+                    });
+                }
+
+                const tokenValue = validateBearerToken(value);
+
+                const payload_refresh_token_decoded = await verifyTokenString({
+                    privateKey: process.env.JWT_PRIVATE_KEY as string,
+                    token: tokenValue
+                });
+
+                return true;
+            }
+        }
+    }
+};
+export const refreshTokenValidator = validator(refreshTokenValidatorSchema, ['body']);
+
+// End Token Middleware

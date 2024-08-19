@@ -1,7 +1,7 @@
 import hc from '@/constants/http-status-codes';
 import { ErrorMessageCode, ErrorUnprocessableEntity } from '@/schemas/errors.schema';
 import { NextFunction, Request, Response } from 'express';
-import { checkSchema, Schema, validationResult } from 'express-validator';
+import { checkSchema, Location, Schema, validationResult } from 'express-validator';
 
 /**
  * !== 422
@@ -28,9 +28,9 @@ import { checkSchema, Schema, validationResult } from 'express-validator';
 
 // Tất cả error được gửi đi, sẽ đều là instanceof ErrorMessageCode
 
-const validator = (schema: Schema) => {
+const validator = (schema: Schema, defaultLocations?: Location[] | undefined) => {
     return async (req: Request, res: Response, next: NextFunction) => {
-        await checkSchema(schema).run(req);
+        await checkSchema(schema, defaultLocations).run(req);
         const result = validationResult(req);
         const result_errors = result.mapped();
 
