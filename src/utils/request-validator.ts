@@ -38,6 +38,7 @@ const validator = (schema: Schema, defaultLocations?: Location[] | undefined) =>
         if (result.isEmpty()) {
             return next();
         }
+        console.log(result_errors);
 
         const unprocessableEntityErros = new ErrorUnprocessableEntity({ errors: {} });
 

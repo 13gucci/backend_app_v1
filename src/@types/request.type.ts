@@ -5,3 +5,12 @@ export type RegisterReqBody = {
     confirm_password: string;
     name: string;
 };
+
+export type LoginReqBody = {
+    email: string;
+    password: string;
+};
+
+export type LogoutReqBody = {
+    refresh_token: string;
+};

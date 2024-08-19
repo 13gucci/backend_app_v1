@@ -3,12 +3,15 @@ import authMsg from '@/constants/messages/auth-messages';
 import serverMsg from '@/constants/messages/server-messages';
 import { validationMsg } from '@/constants/messages/validation-messages';
 import { ErrorMessageCode } from '@/schemas/errors.schema';
+import refreshTokenService from '@/services/refresh-token.service';
 import usersService from '@/services/users.service';
 import { verifyTokenString } from '@/utils/jwt-sign';
 import validator from '@/utils/request-validator';
 import { comparePassword, validateBearerToken } from '@/utils/utils';
+import { Request } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { Schema } from 'express-validator';
+import { JsonWebTokenError } from 'jsonwebtoken';
 
 //Register Middlewares
 const registerValidatorSchema: Schema = {
@@ -158,7 +161,7 @@ export const loginValidator = validator(loginValidatorSchema, ['body']);
 const accessTokenValidatorSchema: Schema = {
     authorization: {
         custom: {
-            options: async (value) => {
+            options: async (value, { req }) => {
                 if (!value) {
                     throw new ErrorMessageCode({
                         code: hc.UNAUTHORIZED,
@@ -166,13 +169,25 @@ const accessTokenValidatorSchema: Schema = {
                     });
                 }
 
-                const tokenValue = validateBearerToken(value);
-
                 //Throw error of Error then request_validator will catch
-                const payload_access_token_decoded = await verifyTokenString({
-                    privateKey: process.env.JWT_PRIVATE_KEY as string,
-                    token: tokenValue
-                });
+                try {
+                    const tokenValue = validateBearerToken(value);
+                    console.log(value);
+                    const payload_access_token_decoded = await verifyTokenString({
+                        privateKey: process.env.JWT_PRIVATE_KEY as string,
+                        token: tokenValue
+                    });
+
+                    (req as Request).payload_access_token_decoded = payload_access_token_decoded;
+                } catch (error) {
+                    if (error instanceof JsonWebTokenError) {
+                        throw new ErrorMessageCode({
+                            code: hc.UNAUTHORIZED,
+                            message: error.message
+                        });
+                    }
+                    throw error;
+                }
 
                 return true;
             }
@@ -185,7 +200,7 @@ export const accessTokenValidator = validator(accessTokenValidatorSchema, ['head
 const refreshTokenValidatorSchema: Schema = {
     refresh_token: {
         custom: {
-            options: async (value) => {
+            options: async (value, { req }) => {
                 if (!value) {
                     throw new ErrorMessageCode({
                         code: hc.UNAUTHORIZED,
@@ -193,12 +208,33 @@ const refreshTokenValidatorSchema: Schema = {
                     });
                 }
 
-                const tokenValue = validateBearerToken(value);
+                try {
+                    const tokenValue = validateBearerToken(value);
+                    const [isExistToken, payload_refresh_token_decoded] = await Promise.all([
+                        refreshTokenService.readRefreshToken({ token: tokenValue }),
+                        verifyTokenString({
+                            privateKey: process.env.JWT_PRIVATE_KEY as string,
+                            token: tokenValue
+                        })
+                    ]);
 
-                const payload_refresh_token_decoded = await verifyTokenString({
-                    privateKey: process.env.JWT_PRIVATE_KEY as string,
-                    token: tokenValue
-                });
+                    if (isExistToken === null) {
+                        throw new ErrorMessageCode({
+                            code: hc.UNAUTHORIZED,
+                            message: 'Refresh token is used or not valid'
+                        });
+                    }
+
+                    (req as Request).payload_refresh_token_decoded = payload_refresh_token_decoded;
+                } catch (error) {
+                    if (error instanceof JsonWebTokenError) {
+                        throw new ErrorMessageCode({
+                            code: hc.UNAUTHORIZED,
+                            message: error.message
+                        });
+                    }
+                    throw error;
+                }
 
                 return true;
             }

@@ -54,7 +54,10 @@ class UsersService {
         return response;
     }
 
-    public async register(payload: { user: Omit<RegisterReqBody, 'confirm_password'> }) {
+    public async register(payload: { user: Omit<RegisterReqBody, 'confirm_password'> }): Promise<{
+        access_token: string;
+        refresh_token: string;
+    }> {
         const { user } = payload;
 
         const passwordHashed = await generateHashPassword({ myPlaintextPassword: user.password });
@@ -83,10 +86,13 @@ class UsersService {
         };
     }
 
-    public async login(payload: { user_id: string }) {
+    public async login(payload: { user_id: string }): Promise<{
+        access_token: string;
+        refresh_token: string;
+    }> {
         const [access_token, refresh_token] = await Promise.all([
             this.signToken({
-                exp: 3,
+                exp: process.env.EXP_ACCESS_TOKEN,
                 private_key: process.env.JWT_PRIVATE_KEY as string,
                 token_type: eTokenType.ACCESS_TOKEN,
                 sub: payload.user_id
@@ -107,6 +113,16 @@ class UsersService {
         return {
             access_token,
             refresh_token
+        };
+    }
+
+    public async logout(payload: { token: string }): Promise<{
+        message: string;
+    }> {
+        await refreshTokenService.deleteToken({ token: payload.token });
+
+        return {
+            message: 'Logout successfully'
         };
     }
 }

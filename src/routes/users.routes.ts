@@ -1,4 +1,4 @@
-import { loginController, registerController } from '@/controllers/users.controllers';
+import { loginController, logoutController, registerController } from '@/controllers/users.controllers';
 import {
     loginLimiter,
     loginValidator,
@@ -18,9 +18,7 @@ router.post('/register', registerValidator, asyncHandler(registerController));
 router.post('/login', loginLimiter, loginValidator, asyncHandler(loginController));
 
 // [POST] /api/users/logout
-router.post('/logout', accessTokenValidator, refreshTokenValidator, (req, res) => {
-    res.send('ok');
-});
+router.post('/logout', accessTokenValidator, refreshTokenValidator, asyncHandler(logoutController));
 
 // Export
 const usersRouters = router;
