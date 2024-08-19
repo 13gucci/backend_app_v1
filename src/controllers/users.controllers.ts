@@ -15,7 +15,6 @@ import usersService from '@/services/users.service';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { JwtPayload } from 'jsonwebtoken';
-import { omit } from 'lodash';
 
 export const registerController = async (req: Request<ParamsDictionary, unknown, RegisterReqBody>, res: Response) => {
     const { confirm_password, ...rest } = req.body;
@@ -132,7 +131,7 @@ export const resetPasswordController = async (
     return res.status(hc.OK).json(response);
 };
 
-export const meController = async (req: Request, res: Response) => {
+export const getMeController = async (req: Request, res: Response) => {
     const { sub } = req.payload_access_token_decoded as JwtPayload;
 
     const user = await usersService.readUser({

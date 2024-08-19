@@ -1,4 +1,5 @@
 import serverMsg from '@/constants/messages/server-messages';
+import BlackList from '@/schemas/black-list.schema';
 import { RefreshToken } from '@/schemas/refresh-token.schema';
 import User from '@/schemas/user.schema';
 import 'dotenv/config';
@@ -60,6 +61,15 @@ class DatabaseService {
         }
 
         return this.db.collection<RefreshToken>(col_name);
+    }
+
+    get blackLists(): Collection<BlackList> {
+        const col_name = process.env.DATABASE_BLACK_LIST_COLLECTION;
+
+        if (!col_name) {
+            throw new Error(serverMsg.COLLECTION_NAME_ERROR);
+        }
+        return this.db.collection<BlackList>(col_name);
     }
 }
 
