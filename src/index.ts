@@ -16,7 +16,7 @@ app.use(express.json()); //Parse json in body request JSON -> Object
 app.use('/api/users', usersRouters);
 
 // [GET] Test server
-app.get('/api', testRouters);
+app.use('/api', testRouters);
 
 // App Error Handler
 app.use(appErrorHandler);

@@ -1,6 +1,6 @@
 import { RefreshToken } from '@/schemas/refresh-token.schema';
 import databaseService from '@/services/database.service';
-import { InsertOneResult, ObjectId } from 'mongodb';
+import { InsertOneResult, ObjectId, WithId } from 'mongodb';
 
 class RefreshTokenService {
     private static instance: RefreshTokenService;
@@ -21,6 +21,20 @@ class RefreshTokenService {
         const response = await databaseService.refreshTokens.insertOne(
             new RefreshToken({ token: payload.token_string, user_id: new ObjectId(payload.user_id) })
         );
+
+        return response;
+    }
+
+    public async readRefreshToken(payload: { token: string }): Promise<WithId<RefreshToken> | null> {
+        const response = await databaseService.refreshTokens.findOne({ token: payload.token });
+
+        return response;
+    }
+
+    public async deleteToken(payload: { token: string }) {
+        const response = await databaseService.refreshTokens.deleteOne({
+            token: payload.token
+        });
 
         return response;
     }

@@ -1,8 +1,9 @@
-import { RegisterReqBody } from '@/@types/register.type';
+import { LoginReqBody, LogoutReqBody, RegisterReqBody } from '@/@types/request.type';
 import hc from '@/constants/http-status-codes';
 import authMsg from '@/constants/messages/auth-messages';
 import { ErrorMessageCode } from '@/schemas/errors.schema';
 import User from '@/schemas/user.schema';
+import refreshTokenService from '@/services/refresh-token.service';
 import usersService from '@/services/users.service';
 import { NextFunction, Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
@@ -18,7 +19,7 @@ export const registerController = async (req: Request<ParamsDictionary, unknown,
     });
 };
 
-export const loginController = async (req: Request, res: Response, next: NextFunction) => {
+export const loginController = async (req: Request<ParamsDictionary, unknown, LoginReqBody>, res: Response) => {
     const { user } = req;
     const { _id } = user as User;
 
@@ -28,4 +29,14 @@ export const loginController = async (req: Request, res: Response, next: NextFun
         message: authMsg.SUCCESS.LOGIN,
         data: response
     });
+};
+
+export const logoutController = async (req: Request<ParamsDictionary, unknown, LogoutReqBody>, res: Response) => {
+    const { refresh_token } = req.body;
+
+    const [_, token] = refresh_token.split(' ');
+
+    const response = await usersService.logout({ token: token });
+
+    return res.json(response);
 };
