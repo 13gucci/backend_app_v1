@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb';
 
 const DEFAULT_STRING = '' as const;
 
-enum eUserVerifyStatus {
+export enum eUserVerifyStatus {
     Unverified,
     Verified,
     Banned

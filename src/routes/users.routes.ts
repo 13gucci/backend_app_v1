@@ -1,10 +1,16 @@
-import { loginController, logoutController, registerController } from '@/controllers/users.controllers';
 import {
+    emailVerifyController,
+    loginController,
+    logoutController,
+    registerController
+} from '@/controllers/users.controllers';
+import {
+    accessTokenValidator,
     loginLimiter,
     loginValidator,
-    accessTokenValidator,
+    refreshTokenValidator,
     registerValidator,
-    refreshTokenValidator
+    verifyEmailValidator
 } from '@/middlewares/users.middlewares';
 import { asyncHandler } from '@/utils/async-handler';
 import express from 'express';
@@ -19,6 +25,9 @@ router.post('/login', loginLimiter, loginValidator, asyncHandler(loginController
 
 // [POST] /api/users/logout
 router.post('/logout', accessTokenValidator, refreshTokenValidator, asyncHandler(logoutController));
+
+// [POST] /api/users/verify-email
+router.post('/verify-email', verifyEmailValidator, asyncHandler(emailVerifyController));
 
 // Export
 const usersRouters = router;

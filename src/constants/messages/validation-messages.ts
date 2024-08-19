@@ -8,5 +8,7 @@ export const validationMsg = {
     PASSWORD_MISMATCH: 'Passwords do not match.',
     INVALID_DATE: 'Please enter a valid date in ISO 8601 format (e.g., YYYY-MM-DDTHH:MM:SS).',
     INVALID_LENGTH: (min: number, max: number) => `This field must be between ${min} and ${max} characters long.`,
-    INVALID_TOKEN: 'This authorization token is invalid'
+    INVALID_TOKEN: 'This authorization token is invalid',
+    USER_NOTFOUND: 'User not found.',
+    VERIFY_EMAIL_SUCCESS: 'Vee'
 };
