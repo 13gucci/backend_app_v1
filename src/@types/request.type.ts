@@ -14,3 +14,7 @@ export type LoginReqBody = {
 export type LogoutReqBody = {
     refresh_token: string;
 };
+
+export type ForgotPasswordReqBody = {
+    email: string;
+};

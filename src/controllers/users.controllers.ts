@@ -1,4 +1,4 @@
-import { LoginReqBody, LogoutReqBody, RegisterReqBody } from '@/@types/request.type';
+import { ForgotPasswordReqBody, LoginReqBody, LogoutReqBody, RegisterReqBody } from '@/@types/request.type';
 import hc from '@/constants/http-status-codes';
 import authMsg from '@/constants/messages/auth-messages';
 import { validationMsg } from '@/constants/messages/validation-messages';
@@ -63,6 +63,41 @@ export const emailVerifyController = async (req: Request, res: Response) => {
     }
 
     const response = await usersService.verifyEmail({ user_id: user._id.toString() });
+
+    res.status(hc.OK).json(response);
+};
+
+export const resendEmailVerifyController = async (req: Request, res: Response) => {
+    const { payload_access_token_decoded } = req;
+    const { sub } = payload_access_token_decoded as JwtPayload;
+
+    const user = await usersService.readUser({ _id: sub as string });
+
+    if (!user) {
+        throw new ErrorMessageCode({
+            code: hc.BAD_REQUEST,
+            message: validationMsg.USER_NOTFOUND
+        });
+    }
+
+    if (user.email_verify_token === '') {
+        throw new ErrorMessageCode({
+            code: hc.BAD_REQUEST,
+            message: 'Email user already verified'
+        });
+    }
+
+    const response = await usersService.resendVerifyEmailToken({ user_id: user._id.toString() });
+
+    res.status(hc.OK).json(response);
+};
+
+export const forgotPasswordController = async (
+    req: Request<ParamsDictionary, unknown, ForgotPasswordReqBody>,
+    res: Response
+) => {
+    const { _id } = req.user as User;
+    const response = await usersService.updateForgotPasswordToken({ user_id: _id.toString() });
 
     res.status(hc.OK).json(response);
 };

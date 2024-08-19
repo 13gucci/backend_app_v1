@@ -90,7 +90,7 @@ class UsersService {
             })
         ]);
 
-        console.log(email_verify_token);
+        console.log('Veify: ', email_verify_token);
 
         const newUser = {
             ...user,
@@ -156,6 +156,9 @@ class UsersService {
                 $set: {
                     email_verify_token: '',
                     verify: eUserVerifyStatus.Verified
+                },
+                $currentDate: {
+                    updated_at: true
                 }
             }
         );
@@ -164,6 +167,75 @@ class UsersService {
             message: 'Verify successfully.'
         };
     }
+
+    public async readVerifyEmailToken(payload: { user_id: string; token: string }) {
+        const response = await databaseService.users.findOne({
+            _id: new ObjectId(payload.user_id),
+            email_verify_token: payload.token
+        });
+
+        return Boolean(response);
+    }
+
+    public async resendVerifyEmailToken(payload: { user_id: string }) {
+        const email_verify_token = await this.signToken({
+            exp: process.env.EXP_ACCESS_TOKEN,
+            private_key: process.env.VERIFY_EMAIL_PRIVATE_KEY as string,
+            token_type: eTokenType.EMAIL_VERIFY_TOKEN,
+            sub: payload.user_id
+        });
+
+        console.log('Resend: ', email_verify_token);
+
+        await databaseService.users.updateOne(
+            {
+                _id: new ObjectId(payload.user_id)
+            },
+            {
+                $set: {
+                    email_verify_token: email_verify_token
+                },
+                $currentDate: {
+                    updated_at: true
+                }
+            }
+        );
+
+        return {
+            message: 'Resend email verify successfully.'
+        };
+    }
+
+    public async updateForgotPasswordToken(payload: { user_id: string }) {
+        const forgot_password_token = await this.signToken({
+            exp: process.env.EXP_FORGOT_PASSWORD_TOKEN,
+            private_key: process.env.FORGOT_PASSWORD_PRIVATE_KEY as string,
+            token_type: eTokenType.FORGOT_PASSWORD_TOKEN,
+            sub: payload.user_id
+        });
+
+        await databaseService.users.updateOne(
+            {
+                _id: new ObjectId(payload.user_id)
+            },
+            {
+                $set: {
+                    forgot_password_token: forgot_password_token
+                },
+                $currentDate: {
+                    updated_at: true
+                }
+            }
+        );
+
+        //Send email with link to email user
+
+        return {
+            message: 'Send forgot password token success'
+        };
+    }
+
+    public async verifyForgotPasswordToken() {}
 }
 
 // Export

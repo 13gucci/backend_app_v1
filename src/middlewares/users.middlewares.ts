@@ -100,7 +100,7 @@ export const registerValidator = validator(registerValidatorSchema, ['body']);
 // End Register Middlewares
 
 // Login Middleware
-export const loginLimiter = rateLimit({
+export const requestLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes,
     limit: 10, // 10 times for login
     standardHeaders: 'draft-7',
@@ -116,7 +116,6 @@ export const loginLimiter = rateLimit({
 
 const loginValidatorSchema: Schema = {
     email: {
-        trim: true,
         notEmpty: {
             errorMessage: validationMsg.REQUIRED
         },
@@ -263,6 +262,18 @@ const verifyEmailTokenValidatorSchema: Schema = {
                         token: value
                     });
 
+                    const isValidEmailVerifyToken = await usersService.readVerifyEmailToken({
+                        token: value,
+                        user_id: payload_email_verify_decoded.sub as string
+                    });
+
+                    if (!isValidEmailVerifyToken) {
+                        throw new ErrorMessageCode({
+                            code: hc.UNAUTHORIZED,
+                            message: 'Email verify token is invalid or already verified'
+                        });
+                    }
+
                     (req as Request).payload_email_verify_decoded = payload_email_verify_decoded;
                 } catch (error) {
                     if (error instanceof JsonWebTokenError) {
@@ -282,3 +293,37 @@ const verifyEmailTokenValidatorSchema: Schema = {
 export const verifyEmailValidator = validator(verifyEmailTokenValidatorSchema, ['body']);
 
 // End Token Middleware
+
+// Forgot password middleware
+
+export const forgotPasswordValidatorSchema: Schema = {
+    email: {
+        trim: true,
+        notEmpty: {
+            errorMessage: validationMsg.REQUIRED
+        },
+        isEmail: {
+            errorMessage: validationMsg.INVALID_EMAIL
+        },
+        custom: {
+            options: async (value, { req }) => {
+                const user = await usersService.emailExists({ email: value });
+
+                if (!user) {
+                    throw new ErrorMessageCode({
+                        code: hc.NOT_FOUND,
+                        message: validationMsg.USER_NOTFOUND
+                    });
+                }
+
+                (req as Request).user = user;
+
+                return true;
+            }
+        }
+    }
+};
+
+export const forgotPasswordValidator = validator(forgotPasswordValidatorSchema, ['body']);
+
+// End forgot password middleware
