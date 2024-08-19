@@ -1,4 +1,11 @@
-import { ForgotPasswordReqBody, LoginReqBody, LogoutReqBody, RegisterReqBody } from '@/@types/request.type';
+import {
+    ForgotPasswordReqBody,
+    LoginReqBody,
+    LogoutReqBody,
+    RegisterReqBody,
+    ResetPasswordReqBody,
+    VerifyForgotPasswordReqBody
+} from '@/@types/request.type';
 import hc from '@/constants/http-status-codes';
 import authMsg from '@/constants/messages/auth-messages';
 import { validationMsg } from '@/constants/messages/validation-messages';
@@ -98,6 +105,28 @@ export const forgotPasswordController = async (
 ) => {
     const { _id } = req.user as User;
     const response = await usersService.updateForgotPasswordToken({ user_id: _id.toString() });
+
+    res.status(hc.OK).json(response);
+};
+
+export const verifyForgotPasswordTokenController = (
+    req: Request<ParamsDictionary, unknown, VerifyForgotPasswordReqBody>,
+    res: Response
+) => {
+    res.status(hc.OK).json({
+        message: 'Verify forgot password token success'
+    });
+};
+
+export const resetPasswordController = async (
+    req: Request<ParamsDictionary, unknown, ResetPasswordReqBody>,
+    res: Response
+) => {
+    const { payload_forgot_password_token_decoded } = req as JwtPayload;
+    const { new_password } = req.body;
+    const { sub } = payload_forgot_password_token_decoded;
+
+    const response = await usersService.resetPassword({ new_password, user_id: sub as string });
 
     res.status(hc.OK).json(response);
 };

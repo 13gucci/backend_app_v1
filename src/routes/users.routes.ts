@@ -4,7 +4,9 @@ import {
     loginController,
     logoutController,
     registerController,
-    resendEmailVerifyController
+    resendEmailVerifyController,
+    resetPasswordController,
+    verifyForgotPasswordTokenController
 } from '@/controllers/users.controllers';
 import {
     accessTokenValidator,
@@ -13,7 +15,9 @@ import {
     refreshTokenValidator,
     registerValidator,
     verifyEmailValidator,
-    forgotPasswordValidator
+    forgotPasswordValidator,
+    verifyForgotPasswordValidator,
+    resetPasswordValidator
 } from '@/middlewares/users.middlewares';
 import { asyncHandler } from '@/utils/async-handler';
 import express from 'express';
@@ -27,7 +31,7 @@ router.post('/register', requestLimiter, registerValidator, asyncHandler(registe
 router.post('/login', requestLimiter, loginValidator, asyncHandler(loginController));
 
 // [POST] /api/users/logout
-router.post('/logout', accessTokenValidator, refreshTokenValidator, asyncHandler(logoutController));
+router.post('/logout', requestLimiter, accessTokenValidator, refreshTokenValidator, asyncHandler(logoutController));
 
 // [POST] /api/users/verify-email
 router.post('/verify-email', requestLimiter, verifyEmailValidator, asyncHandler(emailVerifyController));
@@ -37,6 +41,17 @@ router.post('/resend-verify-email', requestLimiter, accessTokenValidator, asyncH
 
 // [POST] /api/users/forgot-password
 router.post('/forgot-password', requestLimiter, forgotPasswordValidator, asyncHandler(forgotPasswordController));
+
+// [POST] /api/users/verify-forgot-password
+router.post(
+    '/verify-forgot-password',
+    requestLimiter,
+    verifyForgotPasswordValidator,
+    verifyForgotPasswordTokenController
+);
+
+// [POST] /api/users/reset-password
+router.post('/reset-password', requestLimiter, resetPasswordValidator, asyncHandler(resetPasswordController));
 
 // Export
 const usersRouters = router;
