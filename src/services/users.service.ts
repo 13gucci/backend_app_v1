@@ -90,8 +90,6 @@ class UsersService {
             })
         ]);
 
-        console.log('Veify: ', email_verify_token);
-
         const newUser = {
             ...user,
             _id: user_id,
@@ -177,6 +175,15 @@ class UsersService {
         return Boolean(response);
     }
 
+    public async readVerifyPasswordToken(payload: { user_id: string; token: string }) {
+        const response = await databaseService.users.findOne({
+            _id: new ObjectId(payload.user_id),
+            forgot_password_token: payload.token
+        });
+
+        return response;
+    }
+
     public async resendVerifyEmailToken(payload: { user_id: string }) {
         const email_verify_token = await this.signToken({
             exp: process.env.EXP_ACCESS_TOKEN,
@@ -231,11 +238,33 @@ class UsersService {
         //Send email with link to email user
 
         return {
-            message: 'Send forgot password token success'
+            message: 'Check email for reset pass'
         };
     }
 
     public async verifyForgotPasswordToken() {}
+
+    public async resetPassword(payload: { user_id: string; new_password: string }) {
+        const new_hash_password = await generateHashPassword({ myPlaintextPassword: payload.new_password });
+        await databaseService.users.updateOne(
+            {
+                _id: new ObjectId(payload.user_id)
+            },
+            {
+                $set: {
+                    forgot_password_token: '',
+                    password: new_hash_password
+                },
+                $currentDate: {
+                    updated_at: true
+                }
+            }
+        );
+
+        return {
+            message: 'Reset password success'
+        };
+    }
 }
 
 // Export

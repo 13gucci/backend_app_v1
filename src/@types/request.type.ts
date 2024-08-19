@@ -18,3 +18,13 @@ export type LogoutReqBody = {
 export type ForgotPasswordReqBody = {
     email: string;
 };
+
+export type VerifyForgotPasswordReqBody = {
+    verify_forgot_password_token: string;
+};
+
+export type ResetPasswordReqBody = {
+    verify_forgot_password_token: string;
+    new_password: string;
+    confirm_password: string;
+};

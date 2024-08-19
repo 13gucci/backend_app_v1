@@ -9,5 +9,6 @@ declare module 'express' {
         payload_access_token_decoded?: JwtPayload;
         payload_refresh_token_decoded?: JwtPayload;
         payload_email_verify_decoded?: JwtPayload;
+        payload_forgot_password_token_decoded?: JwtPayload;
     }
 }

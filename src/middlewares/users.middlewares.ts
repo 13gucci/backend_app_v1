@@ -326,4 +326,150 @@ export const forgotPasswordValidatorSchema: Schema = {
 
 export const forgotPasswordValidator = validator(forgotPasswordValidatorSchema, ['body']);
 
+export const verifyForgotPasswordValidatorSchema: Schema = {
+    verify_forgot_password_token: {
+        trim: true,
+        custom: {
+            options: async (value, { req }) => {
+                if (!value) {
+                    throw new ErrorMessageCode({
+                        code: hc.UNAUTHORIZED,
+                        message: authMsg.FAILURE.UNAUTHORIZED
+                    });
+                }
+
+                try {
+                    const payload_forgot_password_token_decoded = await verifyTokenString({
+                        privateKey: process.env.FORGOT_PASSWORD_PRIVATE_KEY as string,
+                        token: value
+                    });
+
+                    const user = await usersService.readUser({
+                        _id: payload_forgot_password_token_decoded.sub as string
+                    });
+
+                    if (!user) {
+                        throw new ErrorMessageCode({
+                            code: hc.NOT_FOUND,
+                            message: validationMsg.USER_NOTFOUND
+                        });
+                    }
+
+                    if (user.forgot_password_token !== value) {
+                        throw new ErrorMessageCode({
+                            code: hc.UNAUTHORIZED,
+                            message: authMsg.FAILURE.UNAUTHORIZED
+                        });
+                    }
+
+                    (req as Request).user = user;
+                } catch (error) {
+                    if (error instanceof JsonWebTokenError) {
+                        throw new ErrorMessageCode({
+                            code: hc.UNAUTHORIZED,
+                            message: error.message
+                        });
+                        throw error;
+                    }
+                }
+
+                return true;
+            }
+        }
+    }
+};
+
+export const verifyForgotPasswordValidator = validator(verifyForgotPasswordValidatorSchema);
+
+export const resetPasswordValidatorSchema: Schema = {
+    new_password: {
+        notEmpty: {
+            errorMessage: validationMsg.REQUIRED
+        },
+        isStrongPassword: {
+            options: {
+                minLength: 6,
+                minLowercase: 1,
+                minUppercase: 1,
+                minNumbers: 1,
+                minSymbols: 1
+            },
+            errorMessage: validationMsg.PASSWORD_TOO_WEAK
+        }
+    },
+    confirm_password: {
+        notEmpty: true,
+        isStrongPassword: {
+            options: {
+                minLength: 6,
+                minLowercase: 1,
+                minUppercase: 1,
+                minNumbers: 1,
+                minSymbols: 1
+            },
+            errorMessage: validationMsg.PASSWORD_TOO_WEAK
+        },
+        custom: {
+            options: (value, { req }) => {
+                if (value === req.body.new_password) {
+                    return true;
+                }
+                throw new Error(validationMsg.PASSWORD_MISMATCH);
+            }
+        }
+    },
+    verify_forgot_password_token: {
+        trim: true,
+        custom: {
+            options: async (value, { req }) => {
+                if (!value) {
+                    throw new ErrorMessageCode({
+                        code: hc.UNAUTHORIZED,
+                        message: authMsg.FAILURE.UNAUTHORIZED
+                    });
+                }
+
+                try {
+                    const payload_forgot_password_token_decoded = await verifyTokenString({
+                        privateKey: process.env.FORGOT_PASSWORD_PRIVATE_KEY as string,
+                        token: value
+                    });
+
+                    (req as Request).payload_forgot_password_token_decoded = payload_forgot_password_token_decoded;
+
+                    const user = await usersService.readUser({
+                        _id: payload_forgot_password_token_decoded.sub as string
+                    });
+
+                    if (!user) {
+                        throw new ErrorMessageCode({
+                            code: hc.NOT_FOUND,
+                            message: validationMsg.USER_NOTFOUND
+                        });
+                    }
+
+                    if (user.forgot_password_token !== value) {
+                        throw new ErrorMessageCode({
+                            code: hc.UNAUTHORIZED,
+                            message: authMsg.FAILURE.UNAUTHORIZED
+                        });
+                    }
+                } catch (error) {
+                    if (error instanceof JsonWebTokenError) {
+                        throw new ErrorMessageCode({
+                            code: hc.UNAUTHORIZED,
+                            message: error.message
+                        });
+                    }
+                    throw error;
+                }
+
+                return true;
+            }
+        }
+    }
+};
+
+export const resetPasswordValidator = validator(resetPasswordValidatorSchema, ['body']);
+
 // End forgot password middleware
