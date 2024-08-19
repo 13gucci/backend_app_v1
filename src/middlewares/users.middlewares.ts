@@ -116,6 +116,7 @@ export const loginLimiter = rateLimit({
 
 const loginValidatorSchema: Schema = {
     email: {
+        trim: true,
         notEmpty: {
             errorMessage: validationMsg.REQUIRED
         },
@@ -160,6 +161,7 @@ export const loginValidator = validator(loginValidatorSchema, ['body']);
 // Token Middleware
 const accessTokenValidatorSchema: Schema = {
     authorization: {
+        trim: true,
         custom: {
             options: async (value, { req }) => {
                 if (!value) {
@@ -172,9 +174,8 @@ const accessTokenValidatorSchema: Schema = {
                 //Throw error of Error then request_validator will catch
                 try {
                     const tokenValue = validateBearerToken(value);
-                    console.log(value);
                     const payload_access_token_decoded = await verifyTokenString({
-                        privateKey: process.env.JWT_PRIVATE_KEY as string,
+                        privateKey: process.env.ACCESS_PRIVATE_KEY as string,
                         token: tokenValue
                     });
 
@@ -199,6 +200,7 @@ export const accessTokenValidator = validator(accessTokenValidatorSchema, ['head
 
 const refreshTokenValidatorSchema: Schema = {
     refresh_token: {
+        trim: true,
         custom: {
             options: async (value, { req }) => {
                 if (!value) {
@@ -213,7 +215,7 @@ const refreshTokenValidatorSchema: Schema = {
                     const [isExistToken, payload_refresh_token_decoded] = await Promise.all([
                         refreshTokenService.readRefreshToken({ token: tokenValue }),
                         verifyTokenString({
-                            privateKey: process.env.JWT_PRIVATE_KEY as string,
+                            privateKey: process.env.REFRESH_PRIVATE_KEY as string,
                             token: tokenValue
                         })
                     ]);
@@ -242,5 +244,41 @@ const refreshTokenValidatorSchema: Schema = {
     }
 };
 export const refreshTokenValidator = validator(refreshTokenValidatorSchema, ['body']);
+
+const verifyEmailTokenValidatorSchema: Schema = {
+    email_verify_token: {
+        trim: true,
+        custom: {
+            options: async (value, { req }) => {
+                if (!value) {
+                    throw new ErrorMessageCode({
+                        code: hc.UNAUTHORIZED,
+                        message: authMsg.FAILURE.UNAUTHORIZED
+                    });
+                }
+
+                try {
+                    const payload_email_verify_decoded = await verifyTokenString({
+                        privateKey: process.env.VERIFY_EMAIL_PRIVATE_KEY as string,
+                        token: value
+                    });
+
+                    (req as Request).payload_email_verify_decoded = payload_email_verify_decoded;
+                } catch (error) {
+                    if (error instanceof JsonWebTokenError) {
+                        throw new ErrorMessageCode({
+                            code: hc.UNAUTHORIZED,
+                            message: error.message
+                        });
+                    }
+                    throw error;
+                }
+
+                return true;
+            }
+        }
+    }
+};
+export const verifyEmailValidator = validator(verifyEmailTokenValidatorSchema, ['body']);
 
 // End Token Middleware
