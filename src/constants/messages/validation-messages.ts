@@ -10,5 +10,8 @@ export const validationMsg = {
     INVALID_LENGTH: (min: number, max: number) => `This field must be between ${min} and ${max} characters long.`,
     INVALID_TOKEN: 'This authorization token is invalid',
     USER_NOTFOUND: 'User not found.',
-    VERIFY_EMAIL_SUCCESS: 'Vee'
+    VERIFY_EMAIL_SUCCESS: 'Vee',
+    INVALID_URL: 'The URL must be valid and start with http or https.',
+    INVALID_USERNAME_FORMAT: 'The username can only contain letters, numbers, and underscores.',
+    INVALID_STRING: (field: string) => `${field} must be a valid string.`
 };

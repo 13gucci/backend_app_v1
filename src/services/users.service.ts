@@ -1,4 +1,4 @@
-import { RegisterReqBody } from '@/@types/request.type';
+import { RegisterReqBody, UpdateMeReqBody } from '@/@types/request.type';
 import { eTokenType } from '@/@types/token.type';
 import User, { eUserVerifyStatus } from '@/schemas/user.schema';
 import databaseService from '@/services/database.service';
@@ -117,8 +117,6 @@ class UsersService {
             })
         ]);
 
-        console.log('Click here to verify:   ', email_verify_token);
-
         const newUser = {
             ...user,
             _id: user_id,
@@ -233,8 +231,6 @@ class UsersService {
             sub: payload.user_id
         });
 
-        console.log('Resend: ', email_verify_token);
-
         await databaseService.users.updateOne(
             {
                 _id: new ObjectId(payload.user_id)
@@ -309,6 +305,36 @@ class UsersService {
         return {
             message: 'Reset password success'
         };
+    }
+
+    public async updateMe(payload: { user_id: string; body: UpdateMeReqBody }) {
+        const _body = payload.body.date_of_birth
+            ? { ...payload.body, date_of_birth: new Date(payload.body.date_of_birth) }
+            : payload.body;
+
+        const response = await databaseService.users.findOneAndUpdate(
+            {
+                _id: new ObjectId(payload.user_id)
+            },
+            {
+                $set: {
+                    ...(_body as UpdateMeReqBody & { date_of_birth: Date })
+                },
+                $currentDate: {
+                    updated_at: true
+                }
+            },
+            {
+                returnDocument: 'after',
+                projection: {
+                    password: 0,
+                    email_verify_token: 0,
+                    forgot_password_token: 0
+                }
+            }
+        );
+
+        return response;
     }
 }
 

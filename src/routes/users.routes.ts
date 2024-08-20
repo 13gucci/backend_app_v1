@@ -20,6 +20,7 @@ import {
     forgotPasswordValidator,
     verifyForgotPasswordValidator,
     resetPasswordValidator,
+    verifyUserValidator,
     updateMeValidator
 } from '@/middlewares/users.middlewares';
 import { asyncHandler } from '@/utils/async-handler';
@@ -60,7 +61,7 @@ router.post('/reset-password', requestLimiter, resetPasswordValidator, asyncHand
 router.get('/me', accessTokenValidator, asyncHandler(getMeController));
 
 // [PATCH] /api/users/me
-router.patch('/me', accessTokenValidator, updateMeValidator, asyncHandler(updateMeController));
+router.patch('/me', accessTokenValidator, verifyUserValidator, updateMeValidator, asyncHandler(updateMeController));
 
 // Export
 const usersRouters = router;
