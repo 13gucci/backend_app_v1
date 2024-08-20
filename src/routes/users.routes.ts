@@ -1,27 +1,29 @@
+import { UpdateMeReqBody } from '@/@types/request.type';
 import {
     emailVerifyController,
     forgotPasswordController,
+    getMeController,
     loginController,
     logoutController,
-    getMeController,
     registerController,
     resendEmailVerifyController,
     resetPasswordController,
-    verifyForgotPasswordTokenController,
-    updateMeController
+    updateMeController,
+    verifyForgotPasswordTokenController
 } from '@/controllers/users.controllers';
+import { filterMiddleware } from '@/middlewares/common.middleware';
 import {
     accessTokenValidator,
-    requestLimiter,
+    forgotPasswordValidator,
     loginValidator,
     refreshTokenValidator,
     registerValidator,
-    verifyEmailValidator,
-    forgotPasswordValidator,
-    verifyForgotPasswordValidator,
+    requestLimiter,
     resetPasswordValidator,
-    verifyUserValidator,
-    updateMeValidator
+    updateMeValidator,
+    verifyEmailValidator,
+    verifyForgotPasswordValidator,
+    verifyUserValidator
 } from '@/middlewares/users.middlewares';
 import { asyncHandler } from '@/utils/async-handler';
 import express from 'express';
@@ -61,7 +63,14 @@ router.post('/reset-password', requestLimiter, resetPasswordValidator, asyncHand
 router.get('/me', accessTokenValidator, asyncHandler(getMeController));
 
 // [PATCH] /api/users/me
-router.patch('/me', accessTokenValidator, verifyUserValidator, updateMeValidator, asyncHandler(updateMeController));
+router.patch(
+    '/me',
+    accessTokenValidator,
+    verifyUserValidator,
+    updateMeValidator,
+    filterMiddleware<UpdateMeReqBody>(['avatar', 'bio', 'cover_photo', 'date_of_birth', 'location', 'name', 'website']),
+    asyncHandler(updateMeController)
+);
 
 // Export
 const usersRouters = router;
