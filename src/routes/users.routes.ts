@@ -10,6 +10,7 @@ import {
     registerController,
     resendEmailVerifyController,
     resetPasswordController,
+    unfollowController,
     updateMeController,
     verifyForgotPasswordTokenController
 } from '@/controllers/users.controllers';
@@ -23,6 +24,7 @@ import {
     registerValidator,
     requestLimiter,
     resetPasswordValidator,
+    unfollowValidator,
     updateMeValidator,
     verifyEmailValidator,
     verifyForgotPasswordValidator,
@@ -80,6 +82,15 @@ router.get('/:username', asyncHandler(getUserController));
 
 // [POST] /api/users/follow
 router.post('/follow', accessTokenValidator, verifyUserValidator, followValidator, asyncHandler(followController));
+
+// [POST] /api/users/unfollow
+router.delete(
+    '/follow/:followed_user_id',
+    accessTokenValidator,
+    verifyUserValidator,
+    unfollowValidator,
+    asyncHandler(unfollowController)
+);
 
 // Export
 const usersRouters = router;

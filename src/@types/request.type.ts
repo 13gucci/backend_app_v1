@@ -47,3 +47,7 @@ export type FollowReqBody = {
 export type GetProfileReqParams = {
     username: string;
 };
+
+export type UnfollowReqParams = {
+    followed_user_id: string;
+};
