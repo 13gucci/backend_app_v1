@@ -357,6 +357,25 @@ class UsersService {
 
         return response;
     }
+
+    public async changePassword(payload: { user_id: string; password: string }) {
+        const hashPassword = await generateHashPassword({ myPlaintextPassword: payload.password });
+
+        await databaseService.users.updateOne(
+            {
+                _id: new ObjectId(payload.user_id)
+            },
+            {
+                $set: {
+                    password: hashPassword
+                }
+            }
+        );
+
+        return {
+            message: 'Update password success'
+        };
+    }
 }
 
 // Export

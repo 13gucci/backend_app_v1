@@ -40,6 +40,12 @@ export type UpdateMeReqBody = {
     cover_photo?: string;
 };
 
+export type ChangePasswordReqBody = {
+    old_password: string;
+    new_password: string;
+    confirm_new_password: string;
+};
+
 export type FollowReqBody = {
     followed_user_id: string;
 };
