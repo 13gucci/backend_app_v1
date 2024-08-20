@@ -4,6 +4,7 @@ import {
     LogoutReqBody,
     RegisterReqBody,
     ResetPasswordReqBody,
+    UpdateMeReqBody,
     VerifyForgotPasswordReqBody
 } from '@/@types/request.type';
 import hc from '@/constants/http-status-codes';
@@ -145,8 +146,14 @@ export const getMeController = async (req: Request, res: Response) => {
     });
 };
 
-export const updateMeController = async (req: Request, res: Response) => {
-    res.status(200).json({
-        message: 'Update oke'
+export const updateMeController = async (req: Request<ParamsDictionary, unknown, UpdateMeReqBody>, res: Response) => {
+    const { sub } = req.payload_access_token_decoded as JwtPayload;
+    const body = req.body;
+
+    const response = await usersService.updateMe({ user_id: sub as string, body });
+
+    res.status(hc.OK).json({
+        message: 'Update profile successfully',
+        data: response
     });
 };

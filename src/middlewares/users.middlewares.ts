@@ -477,7 +477,7 @@ export const resetPasswordValidator = validator(resetPasswordValidatorSchema, ['
 // update me validator middleware
 // Nếu synchronous middleware ta chỉ cần throw,
 // Nếu là asynchrounous ta cần next
-export const updateMeValidator = (req: Request, res: Response, next: NextFunction) => {
+export const verifyUserValidator = (req: Request, res: Response, next: NextFunction) => {
     const { verify } = req.payload_access_token_decoded as JwtPayload;
 
     if (verify !== eUserVerifyStatus.Verified) {
@@ -492,4 +492,137 @@ export const updateMeValidator = (req: Request, res: Response, next: NextFunctio
     return next();
 };
 
+// name?: string;
+// date_of_birth?: string;
+// bio?: string;
+// location?: string;
+// website?: string;
+// avatar?: string;
+// username?: string;
+// cover_photo?: string;
+
+const updateMeValidatorSchema: Schema = {
+    name: {
+        optional: true,
+        isString: {
+            errorMessage: validationMsg.INVALID_STRING('Name')
+        },
+        isLength: {
+            options: {
+                min: 1,
+                max: 100
+            },
+            errorMessage: validationMsg.INVALID_LENGTH(1, 100)
+        },
+        trim: true
+    },
+    date_of_birth: {
+        optional: true,
+        isString: {
+            errorMessage: validationMsg.INVALID_STRING('Date of Birth')
+        },
+        isISO8601: {
+            options: {
+                strict: true,
+                strictSeparator: true
+            },
+            errorMessage: validationMsg.INVALID_DATE
+        }
+    },
+    bio: {
+        optional: true,
+        isString: {
+            errorMessage: validationMsg.INVALID_STRING('Bio')
+        },
+        isLength: {
+            options: {
+                min: 1,
+                max: 100
+            },
+            errorMessage: validationMsg.INVALID_LENGTH(1, 100)
+        },
+        trim: true
+    },
+    location: {
+        optional: true,
+        isString: {
+            errorMessage: validationMsg.INVALID_STRING('Location')
+        },
+        isLength: {
+            options: {
+                min: 1,
+                max: 100
+            },
+            errorMessage: validationMsg.INVALID_LENGTH(1, 100)
+        },
+        trim: true
+    },
+    website: {
+        optional: true,
+        isString: {
+            errorMessage: validationMsg.INVALID_STRING('Website')
+        },
+        isURL: {
+            options: {
+                protocols: ['http', 'https'],
+                require_protocol: true
+            },
+            errorMessage: validationMsg.INVALID_URL
+        },
+        isLength: {
+            options: {
+                min: 1,
+                max: 100
+            },
+            errorMessage: validationMsg.INVALID_LENGTH(1, 100)
+        },
+        trim: true
+    },
+    avatar: {
+        optional: true,
+        isString: {
+            errorMessage: validationMsg.INVALID_STRING('Avatar')
+        },
+        isURL: {
+            options: {
+                protocols: ['http', 'https'],
+                require_protocol: true
+            },
+            errorMessage: validationMsg.INVALID_URL
+        }
+    },
+    username: {
+        optional: true,
+        isString: {
+            errorMessage: validationMsg.INVALID_STRING('Username')
+        },
+        isLength: {
+            options: {
+                min: 3,
+                max: 30
+            },
+            errorMessage: validationMsg.INVALID_LENGTH(3, 30)
+        },
+        trim: true,
+        matches: {
+            options: /^[a-zA-Z0-9_]+$/,
+            errorMessage: validationMsg.INVALID_USERNAME_FORMAT
+        }
+    },
+    cover_photo: {
+        optional: true,
+        isString: {
+            errorMessage: validationMsg.INVALID_STRING('Cover Photo')
+        },
+        isURL: {
+            options: {
+                protocols: ['http', 'https'],
+                require_protocol: true
+            },
+            errorMessage: validationMsg.INVALID_URL
+        }
+    }
+};
+
+export const updateMeValidator = validator(updateMeValidatorSchema);
 // End update me validator middleware
