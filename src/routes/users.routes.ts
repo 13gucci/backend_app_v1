@@ -1,8 +1,10 @@
 import { UpdateMeReqBody } from '@/@types/request.type';
 import {
     emailVerifyController,
+    followController,
     forgotPasswordController,
     getMeController,
+    getUserController,
     loginController,
     logoutController,
     registerController,
@@ -14,6 +16,7 @@ import {
 import { filterMiddleware } from '@/middlewares/common.middleware';
 import {
     accessTokenValidator,
+    followValidator,
     forgotPasswordValidator,
     loginValidator,
     refreshTokenValidator,
@@ -71,6 +74,12 @@ router.patch(
     filterMiddleware<UpdateMeReqBody>(['avatar', 'bio', 'cover_photo', 'date_of_birth', 'location', 'name', 'website']),
     asyncHandler(updateMeController)
 );
+
+// [GET] /api/users/:username
+router.get('/:username', asyncHandler(getUserController));
+
+// [POST] /api/users/follow
+router.post('/follow', accessTokenValidator, verifyUserValidator, followValidator, asyncHandler(followController));
 
 // Export
 const usersRouters = router;

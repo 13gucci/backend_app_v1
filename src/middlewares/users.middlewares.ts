@@ -13,6 +13,7 @@ import { NextFunction, Request, Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { Schema } from 'express-validator';
 import { JsonWebTokenError, JwtPayload } from 'jsonwebtoken';
+import { ObjectId } from 'mongodb';
 
 //Register Middlewares
 const registerValidatorSchema: Schema = {
@@ -626,3 +627,35 @@ const updateMeValidatorSchema: Schema = {
 
 export const updateMeValidator = validator(updateMeValidatorSchema);
 // End update me validator middleware
+
+// Follow | unfollow validator middleware
+
+const followValidatorSchema: Schema = {
+    followed_user_id: {
+        custom: {
+            options: async (value, { req }) => {
+                if (!value) {
+                    throw new ErrorMessageCode({
+                        code: hc.NOT_FOUND,
+                        message: 'Followered id is required'
+                    });
+                }
+
+                const user = await usersService.readUser({ _id: value });
+
+                if (!user) {
+                    throw new ErrorMessageCode({
+                        code: hc.NOT_FOUND,
+                        message: validationMsg.USER_NOTFOUND
+                    });
+                }
+
+                return true;
+            }
+        }
+    }
+};
+
+export const followValidator = validator(followValidatorSchema);
+
+// End Follow | unfollow validator middleware
