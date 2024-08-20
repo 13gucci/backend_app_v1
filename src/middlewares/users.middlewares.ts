@@ -625,7 +625,7 @@ const updateMeValidatorSchema: Schema = {
     }
 };
 
-export const updateMeValidator = validator(updateMeValidatorSchema);
+export const updateMeValidator = validator(updateMeValidatorSchema, ['body']);
 // End update me validator middleware
 
 // Follow | unfollow validator middleware
@@ -656,6 +656,34 @@ const followValidatorSchema: Schema = {
     }
 };
 
-export const followValidator = validator(followValidatorSchema);
+export const followValidator = validator(followValidatorSchema, ['body']);
+
+const unfollowVadilatorSchema: Schema = {
+    followed_user_id: {
+        custom: {
+            options: async (value) => {
+                if (!value) {
+                    throw new ErrorMessageCode({
+                        code: hc.BAD_REQUEST,
+                        message: 'Followed_user_id is missing'
+                    });
+                }
+
+                const user = await usersService.readUser({ _id: value });
+
+                if (!user) {
+                    throw new ErrorMessageCode({
+                        code: hc.NOT_FOUND,
+                        message: validationMsg.USER_NOTFOUND
+                    });
+                }
+
+                return true;
+            }
+        }
+    }
+};
+
+export const unfollowValidator = validator(unfollowVadilatorSchema, ['params']);
 
 // End Follow | unfollow validator middleware

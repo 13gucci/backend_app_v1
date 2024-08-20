@@ -34,6 +34,17 @@ class FollowerService {
 
         return response;
     }
+
+    public async unfollow(payload: { followed_user_id: string; user_id: string }) {
+        await databaseService.followers.deleteOne({
+            followed_user_id: new ObjectId(payload.followed_user_id),
+            user_id: new ObjectId(payload.user_id)
+        });
+
+        return {
+            message: 'Unfollow user success'
+        };
+    }
 }
 
 // Export

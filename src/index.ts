@@ -1,6 +1,6 @@
 import serverMsg from '@/constants/messages/server-messages';
 import { appErrorHandler } from '@/middlewares/errors.middleware';
-import testRouters from '@/routes/test.routes';
+import testRouters from '@/routes/test-api.routes';
 import usersRouters from '@/routes/users.routes';
 import databaseService from '@/services/database.service';
 import 'dotenv/config';

@@ -6,6 +6,7 @@ import {
     LogoutReqBody,
     RegisterReqBody,
     ResetPasswordReqBody,
+    UnfollowReqParams,
     UpdateMeReqBody,
     VerifyForgotPasswordReqBody
 } from '@/@types/request.type';
@@ -203,4 +204,25 @@ export const followController = async (req: Request<ParamsDictionary, unknown, F
     return res.status(hc.OK).json({
         message: 'Follow user successfully'
     });
+};
+
+export const unfollowController = async (req: Request<UnfollowReqParams>, res: Response) => {
+    const { sub } = req.payload_access_token_decoded as JwtPayload;
+    const { followed_user_id } = req.params;
+
+    const isFollowBefore = await followerService.isFollowBefore({
+        user_id: sub as string,
+        followed_user_id: followed_user_id
+    });
+
+    if (!isFollowBefore) {
+        throw new ErrorMessageCode({
+            code: hc.OK,
+            message: 'Unfollowed already'
+        });
+    }
+
+    const response = await followerService.unfollow({ user_id: sub as string, followed_user_id: followed_user_id });
+
+    return res.status(hc.OK).json(response);
 };
