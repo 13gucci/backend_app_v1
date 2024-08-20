@@ -597,17 +597,21 @@ const updateMeValidatorSchema: Schema = {
         isString: {
             errorMessage: validationMsg.INVALID_STRING('Username')
         },
-        isLength: {
-            options: {
-                min: 3,
-                max: 30
-            },
-            errorMessage: validationMsg.INVALID_LENGTH(3, 30)
-        },
         trim: true,
         matches: {
-            options: /^[a-zA-Z0-9_]+$/,
+            options: /^(?![0-9]+$)[A-Za-z0-9_]{4,15}$/,
             errorMessage: validationMsg.INVALID_USERNAME_FORMAT
+        },
+        custom: {
+            options: async (value, { req }) => {
+                const user = await usersService.readUserByUsername({ username: value });
+
+                if (user) {
+                    throw new Error('Username already exist');
+                }
+
+                return true;
+            }
         }
     },
     cover_photo: {
@@ -687,3 +691,70 @@ const unfollowVadilatorSchema: Schema = {
 export const unfollowValidator = validator(unfollowVadilatorSchema, ['params']);
 
 // End Follow | unfollow validator middleware
+
+// Change password validator middleware
+const changePasswordValidatorSchema: Schema = {
+    old_password: {
+        notEmpty: {
+            errorMessage: validationMsg.REQUIRED
+        },
+        custom: {
+            options: async (value, { req }) => {
+                const { sub } = (req as Request).payload_access_token_decoded as JwtPayload;
+
+                const user = await usersService.readUser({ _id: sub as string });
+
+                if (!user) {
+                    throw new ErrorMessageCode({
+                        code: hc.NOT_FOUND,
+                        message: validationMsg.USER_NOTFOUND
+                    });
+                }
+
+                const { password } = user;
+
+                const isValidPassword = await comparePassword(value, password);
+
+                if (!isValidPassword) {
+                    throw new ErrorMessageCode({
+                        code: hc.UNAUTHORIZED,
+                        message: 'Old password is not correct'
+                    });
+                }
+
+                return true;
+            }
+        }
+    },
+    new_password: {
+        notEmpty: {
+            errorMessage: validationMsg.REQUIRED
+        },
+        isStrongPassword: {
+            options: {
+                minLength: 6,
+                minLowercase: 1,
+                minUppercase: 1,
+                minNumbers: 1,
+                minSymbols: 1
+            },
+            errorMessage: validationMsg.PASSWORD_TOO_WEAK
+        }
+    },
+    confirm_new_password: {
+        notEmpty: {
+            errorMessage: validationMsg.REQUIRED
+        },
+        custom: {
+            options: (value, { req }) => {
+                if (value !== req.body.new_password) {
+                    throw new Error(validationMsg.PASSWORD_MISMATCH);
+                }
+                return true;
+            }
+        }
+    }
+};
+
+export const changePasswordValidator = validator(changePasswordValidatorSchema);
+// End change password validator middleware

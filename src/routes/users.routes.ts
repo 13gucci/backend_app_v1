@@ -1,5 +1,6 @@
 import { UpdateMeReqBody } from '@/@types/request.type';
 import {
+    changePasswordController,
     emailVerifyController,
     followController,
     forgotPasswordController,
@@ -17,6 +18,7 @@ import {
 import { filterMiddleware } from '@/middlewares/common.middleware';
 import {
     accessTokenValidator,
+    changePasswordValidator,
     followValidator,
     forgotPasswordValidator,
     loginValidator,
@@ -91,6 +93,9 @@ router.delete(
     unfollowValidator,
     asyncHandler(unfollowController)
 );
+
+// [PUT] /api/users/change-password
+router.put('/change-password', accessTokenValidator, changePasswordValidator, asyncHandler(changePasswordController));
 
 // Export
 const usersRouters = router;

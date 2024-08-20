@@ -1,4 +1,5 @@
 import {
+    ChangePasswordReqBody,
     FollowReqBody,
     ForgotPasswordReqBody,
     GetProfileReqParams,
@@ -223,6 +224,18 @@ export const unfollowController = async (req: Request<UnfollowReqParams>, res: R
     }
 
     const response = await followerService.unfollow({ user_id: sub as string, followed_user_id: followed_user_id });
+
+    return res.status(hc.OK).json(response);
+};
+
+export const changePasswordController = async (
+    req: Request<ParamsDictionary, unknown, ChangePasswordReqBody>,
+    res: Response
+) => {
+    const { new_password } = req.body;
+    const { sub } = req.payload_access_token_decoded as JwtPayload;
+
+    const response = await usersService.changePassword({ password: new_password, user_id: sub as string });
 
     return res.status(hc.OK).json(response);
 };
