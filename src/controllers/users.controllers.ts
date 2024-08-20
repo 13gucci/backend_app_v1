@@ -1,5 +1,7 @@
 import {
+    FollowReqBody,
     ForgotPasswordReqBody,
+    GetProfileReqParams,
     LoginReqBody,
     LogoutReqBody,
     RegisterReqBody,
@@ -12,6 +14,7 @@ import authMsg from '@/constants/messages/auth-messages';
 import { validationMsg } from '@/constants/messages/validation-messages';
 import { ErrorMessageCode } from '@/schemas/errors.schema';
 import User from '@/schemas/user.schema';
+import followerService from '@/services/follower.service';
 import usersService from '@/services/users.service';
 import { Request, Response } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
@@ -152,8 +155,52 @@ export const updateMeController = async (req: Request<ParamsDictionary, unknown,
 
     const response = await usersService.updateMe({ user_id: sub as string, body });
 
-    res.status(hc.OK).json({
+    return res.status(hc.OK).json({
         message: 'Update profile successfully',
         data: response
+    });
+};
+
+export const getUserController = async (req: Request<GetProfileReqParams>, res: Response) => {
+    const { username } = req.params;
+
+    const response = await usersService.readUserByUsername({
+        username: username,
+        protect_fields: ['email_verify_token', 'forgot_password_token', 'password', 'verify']
+    });
+
+    if (!response) {
+        throw new ErrorMessageCode({
+            code: hc.NOT_FOUND,
+            message: validationMsg.USER_NOTFOUND
+        });
+    }
+
+    return res.status(hc.OK).json({
+        message: 'Get profile user successfully',
+        data: response
+    });
+};
+
+export const followController = async (req: Request<ParamsDictionary, unknown, FollowReqBody>, res: Response) => {
+    const { sub } = req.payload_access_token_decoded as JwtPayload;
+    const { followed_user_id } = req.body;
+
+    const isFollowBefore = await followerService.isFollowBefore({
+        user_id: sub as string,
+        followed_user_id: followed_user_id
+    });
+
+    if (isFollowBefore) {
+        throw new ErrorMessageCode({
+            code: hc.OK,
+            message: 'This user was followed'
+        });
+    }
+
+    const response = await followerService.follow({ user_id: sub as string, followed_user_id: followed_user_id });
+
+    return res.status(hc.OK).json({
+        message: 'Follow user successfully'
     });
 };

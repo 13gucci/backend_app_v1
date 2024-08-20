@@ -1,5 +1,6 @@
 import serverMsg from '@/constants/messages/server-messages';
 import BlackList from '@/schemas/black-list.schema';
+import Follower from '@/schemas/follower.schema';
 import { RefreshToken } from '@/schemas/refresh-token.schema';
 import User from '@/schemas/user.schema';
 import 'dotenv/config';
@@ -70,6 +71,15 @@ class DatabaseService {
             throw new Error(serverMsg.COLLECTION_NAME_ERROR);
         }
         return this.db.collection<BlackList>(col_name);
+    }
+
+    get followers(): Collection<Follower> {
+        const col_name = process.env.DATABASE_FOLLOWER_COLLECTION;
+
+        if (!col_name) {
+            throw new Error(serverMsg.COLLECTION_NAME_ERROR);
+        }
+        return this.db.collection<Follower>(col_name);
     }
 }
 

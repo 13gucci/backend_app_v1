@@ -19,6 +19,6 @@ export const appErrorHandler = (err: any, req: Request, res: Response, next: Nex
 
     return res.status(hc.INTERNAL_SERVER_ERROR).json({
         message: err.message,
-        errorInfor: omit(err, ['stack'])
+        errorInfor: omit(err, [''])
     });
 };

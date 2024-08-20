@@ -120,6 +120,7 @@ class UsersService {
         const newUser = {
             ...user,
             _id: user_id,
+            username: `user_${user_id}`,
             date_of_birth: new Date(user.date_of_birth),
             password: passwordHashed,
             email_verify_token
@@ -331,6 +332,26 @@ class UsersService {
                     email_verify_token: 0,
                     forgot_password_token: 0
                 }
+            }
+        );
+
+        return response;
+    }
+
+    public async readUserByUsername(payload: { username: string; protect_fields?: (keyof User)[] }) {
+        const protects: { [key: string]: number } = {};
+
+        if (payload.protect_fields && Array.isArray(payload.protect_fields)) {
+            payload.protect_fields.forEach((field) => {
+                protects[field as string] = 0;
+            });
+        }
+        const response = await databaseService.users.findOne(
+            {
+                username: payload.username
+            },
+            {
+                projection: protects
             }
         );
 

@@ -39,3 +39,11 @@ export type UpdateMeReqBody = {
     username?: string;
     cover_photo?: string;
 };
+
+export type FollowReqBody = {
+    followed_user_id: string;
+};
+
+export type GetProfileReqParams = {
+    username: string;
+};
