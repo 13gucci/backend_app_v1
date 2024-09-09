@@ -94,7 +94,7 @@ router.delete(
     asyncHandler(unfollowController)
 );
 
-// [PUT] /api/users/change-password
+// [PUT] /api/users/change-password-2
 router.put('/change-password', accessTokenValidator, changePasswordValidator, asyncHandler(changePasswordController));
 
 // Export
