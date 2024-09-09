@@ -95,7 +95,13 @@ router.delete(
 );
 
 // [PUT] /api/users/change-password-2
-router.put('/change-password', accessTokenValidator, changePasswordValidator, asyncHandler(changePasswordController));
+router.put(
+    '/change-password',
+    accessTokenValidator,
+    verifyUserValidator,
+    changePasswordValidator,
+    asyncHandler(changePasswordController)
+);
 
 // Export
 const usersRouters = router;
