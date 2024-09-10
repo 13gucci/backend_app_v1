@@ -104,7 +104,7 @@ export const registerValidator = validator(registerValidatorSchema, ['body']);
 // Login Middleware
 export const requestLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes,
-    limit: 100, // 10 times for login
+    limit: 5, // 10 times for login
     standardHeaders: 'draft-7',
     handler: (req, res, next) => {
         next(

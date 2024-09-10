@@ -57,3 +57,11 @@ export type GetProfileReqParams = {
 export type UnfollowReqParams = {
     followed_user_id: string;
 };
+
+export type OauthReqQueries = {
+    code: string;
+    scope: string;
+    authuser: string;
+    hd: string;
+    prompt: string;
+};
