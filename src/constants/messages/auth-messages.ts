@@ -20,7 +20,8 @@ const authMsg = {
         ACCOUNT_LOCKED: 'Account is locked due to multiple failed login attempts.',
         UNAUTHORIZED: 'Unauthorized access.',
         FORBIDDEN: 'You do not have permission to perform this action.',
-        UNVERIFY: 'User is not verified. Please verify your email address to access this resource.'
+        UNVERIFY: 'User is not verified. Please verify your email address to access this resource.',
+        GMAIL_UNVERIFY: 'Gmail is not verified'
     }
 } as const;
 export default authMsg;
